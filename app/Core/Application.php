@@ -11,6 +11,7 @@ final class Application {
         $route = $this->path;
         $site = new SiteController; $shop = new ShopController; $auth = new AuthController; $account = new AccountController; $admin = new AdminController;
         if ($route === '/' && $method === 'GET') $site->home();
+        if ($route === '/contents' && $method === 'GET') $site->contents();
         if ($route === '/sitemap.xml' && $method === 'GET') $site->sitemap();
         if ($route === '/about' && $method === 'GET') $site->page('About Archon', 'about');
         if (in_array($route, ['/privacy','/terms','/refund-policy','/download-policy'], true) && $method === 'GET') $site->policy(ltrim($route,'/'));

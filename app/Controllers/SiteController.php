@@ -3,13 +3,18 @@ namespace App\Controllers;
 use App\Core\Security;
 use App\Services\MailService;
 use App\Services\DemoContent;
+use App\Services\BookChapterService;
 
 final class SiteController extends Controller {
     public function home(): never {
         $data=['books'=>[], 'services'=>[], 'authors'=>[], 'posts'=>[], 'testimonials'=>[]];
         if ($this->dbAvailable()) { $data['books']=$this->all("SELECT b.*, a.name author_name FROM books b JOIN authors a ON a.id=b.author_id WHERE b.is_active=1 ORDER BY b.is_featured DESC, b.id DESC LIMIT 4"); $data['services']=$this->all('SELECT * FROM services WHERE is_active=1 ORDER BY display_order LIMIT 8'); $data['authors']=$this->all('SELECT * FROM authors WHERE is_active=1 ORDER BY is_featured DESC LIMIT 4'); $data['posts']=$this->all("SELECT * FROM blog_posts WHERE status='published' ORDER BY published_at DESC LIMIT 3"); $data['testimonials']=$this->all('SELECT * FROM testimonials WHERE is_active=1 LIMIT 4'); } else {$data['services']=DemoContent::services();$data['authors']=DemoContent::authors();$data['posts']=DemoContent::posts();$data['testimonials']=DemoContent::testimonials();}
+        $data['chapters']=BookChapterService::chapters();
+        $data['bookChapter']='home';
+        $data['__layout']='book';
         $this->render('site/home',$data);
     }
+    public function contents(): never {$this->render('site/contents',['title'=>'Table of Contents | Archon Publishing House','chapters'=>BookChapterService::chapters(),'bookChapter'=>'contents','__layout'=>'book']);}
     public function sitemap(): never {$paths=['/','/services','/authors','/about','/blog','/contact','/quote','/privacy','/terms'];try{foreach($this->all('SELECT slug FROM services WHERE is_active=1') as $row)$paths[]='/services/'.rawurlencode($row['slug']);foreach($this->all('SELECT slug FROM authors WHERE is_active=1') as $row)$paths[]='/authors/'.rawurlencode($row['slug']);foreach($this->all("SELECT slug FROM blog_posts WHERE status='published'") as $row)$paths[]='/blog/'.rawurlencode($row['slug']);}catch(\Throwable){}$base=rtrim(\App\Core\Env::get('APP_URL','http://localhost'),'/');header('Content-Type: application/xml; charset=UTF-8');echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";foreach(array_unique($paths) as $path)echo '<url><loc>'.Security::e($base.$path).'</loc></url>'."\n";echo '</urlset>';exit;}
     public function page(string $title, string $template): never { $this->render('site/'.$template,compact('title')); }
     public function policy(string $key): never { $titles=['privacy'=>'Privacy Policy','terms'=>'Terms & Conditions','refund-policy'=>'Refund Policy','download-policy'=>'Download Policy']; $this->render('site/policy',['title'=>$titles[$key]??'Policy','key'=>$key]); }

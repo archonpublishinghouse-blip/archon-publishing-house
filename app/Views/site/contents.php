@@ -1,0 +1,1 @@
+<header class="book-route-heading"><p class="eyebrow">ARCHON PUBLISHING HOUSE</p><h1>Table of Contents</h1><p>Choose a chapter and continue your publishing journey at your own pace.</p></header><div class="book-route-toc"><?php require dirname(__DIR__).'/components/book-toc.php'; ?></div>
