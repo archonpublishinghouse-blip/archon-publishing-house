@@ -47,7 +47,7 @@
             .preview-turn-overlay.previous-in{animation:previewPreviousIn .32s cubic-bezier(0,0,.2,1) both}
             .preview-settled-layer{position:absolute;inset:0;z-index:10;display:grid;grid-template-columns:1fr 1fr;pointer-events:none}
             .preview-settled-page{position:relative;overflow:hidden;padding:clamp(1.7rem,3.1vw,4rem);background:#f2ebd0;background-image:radial-gradient(rgba(91,69,28,.13) .5px,transparent .7px);background-size:7px 7px;color:#0a2223}
-            .preview-settled-page:empty{background:transparent}
+            .preview-settled-layer.is-hidden,.preview-settled-page.is-blank{visibility:hidden}
             @keyframes previewNextOut{from{transform:rotateY(0deg)}to{transform:rotateY(-89.9deg)}}
             @keyframes previewNextIn{from{transform:rotateY(89.9deg)}to{transform:rotateY(0deg)}}
             @keyframes previewPreviousOut{from{transform:rotateY(0deg)}to{transform:rotateY(89.9deg)}}
@@ -109,6 +109,9 @@
             const pages=pagesForState(state);
             appendPage(settledLeft,pages.left);
             appendPage(settledRight,pages.right);
+            settledLayer.classList.toggle('is-hidden',state===0||state===10);
+            settledLeft.classList.toggle('is-blank',pages.left===0);
+            settledRight.classList.toggle('is-blank',pages.right===0);
             personalize();
         };
         const updateCoverVisibility=state=>{

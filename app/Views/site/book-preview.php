@@ -1,1 +1,1 @@
-<style>.preview-body{height:100dvh!important;overflow:hidden!important}.preview[data-state="0"] .preview-sheet,.preview[data-state="10"] .preview-sheet{visibility:visible!important}</style><?php require dirname(__DIR__).'/components/book-shell-v2.php'; ?>
+<style>.preview-body{height:100dvh!important;overflow:hidden!important}</style><?php require dirname(__DIR__).'/components/book-shell-v2.php'; ?>
