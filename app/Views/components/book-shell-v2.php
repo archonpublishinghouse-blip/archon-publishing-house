@@ -1,8 +1,17 @@
-<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260815">
+<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260815-ambient1">
 
 <?php require __DIR__ . '/book-welcome.php'; ?>
 
 <main class="preview" data-preview data-state="0">
+    <div class="preview-library" aria-hidden="true">
+        <span class="preview-ambient-book preview-ambient-book--1"></span>
+        <span class="preview-ambient-book preview-ambient-book--2"></span>
+        <span class="preview-ambient-book preview-ambient-book--3"></span>
+        <span class="preview-ambient-book preview-ambient-book--4"></span>
+        <span class="preview-ambient-book preview-ambient-book--5"></span>
+        <span class="preview-ambient-book preview-ambient-book--6"></span>
+    </div>
+
     <div class="preview-stage" data-stage aria-label="Your personalized eBook journey">
         <?php for ($i = 0; $i < 10; $i++): ?>
             <section class="preview-sheet" data-sheet="<?= $i ?>">

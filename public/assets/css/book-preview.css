@@ -68,6 +68,152 @@
     transform-origin: top center;
 }
 
+.preview-library,
+.preview-stage {
+    grid-area: 1 / 1;
+}
+
+.preview-library {
+    position: relative;
+    z-index: 0;
+    width: min(100vw, calc(var(--pp) * 2 + 28rem));
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    user-select: none;
+    opacity: .82;
+    transition: opacity .65s ease;
+}
+
+.preview:not([data-state="0"]):not([data-state="10"]) .preview-library {
+    opacity: .22;
+}
+
+.preview[data-state="10"] .preview-library {
+    opacity: .58;
+}
+
+.preview-ambient-book {
+    --book-x: 0px;
+    --book-y: 0px;
+    --book-rotation: 0deg;
+    --book-scale: 1;
+    --book-opacity: .52;
+    --book-delay: 0s;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: clamp(3.6rem, 4.5vw, 5rem);
+    height: clamp(17rem, 47dvh, 27rem);
+    border: 1px solid rgba(221, 199, 143, .36);
+    border-radius: 3px 9px 9px 3px;
+    background-color: #244b4d;
+    background-image:
+        linear-gradient(90deg, rgba(0, 0, 0, .34), transparent 20%, rgba(255, 255, 255, .045) 55%, rgba(0, 0, 0, .18)),
+        linear-gradient(180deg, transparent 15%, rgba(221, 199, 143, .52) 15% 16%, transparent 16% 83%, rgba(221, 199, 143, .52) 83% 84%, transparent 84%);
+    box-shadow: inset .45rem 0 .85rem rgba(0, 0, 0, .28), 0 1.4rem 2.3rem rgba(0, 0, 0, .34);
+    opacity: var(--book-opacity);
+    transform: translate(calc(-50% + var(--book-x)), calc(-50% + var(--book-y))) rotate(var(--book-rotation)) scale(var(--book-scale));
+    transform-origin: center bottom;
+    animation: previewBookArrival 1.35s cubic-bezier(.16, 1, .3, 1) var(--book-delay) both;
+}
+
+.preview-ambient-book::before {
+    content: "";
+    position: absolute;
+    inset: .6rem .55rem;
+    border: 1px solid rgba(235, 220, 185, .18);
+    box-shadow: inset 0 0 1rem rgba(0, 0, 0, .12);
+}
+
+.preview-ambient-book::after {
+    content: "";
+    position: absolute;
+    top: 27%;
+    left: 50%;
+    width: 1.6rem;
+    height: 1.6rem;
+    border: 1px solid rgba(221, 199, 143, .38);
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+
+.preview-ambient-book--1 {
+    --book-x: calc(0px - var(--pp) - 3.75rem);
+    --book-y: 2.8rem;
+    --book-rotation: -10deg;
+    --book-scale: .88;
+    --book-opacity: .34;
+    --book-delay: .04s;
+    background-color: #293f3f;
+}
+
+.preview-ambient-book--2 {
+    --book-x: calc(1.25rem - var(--pp));
+    --book-y: .7rem;
+    --book-rotation: -5deg;
+    --book-scale: 1.03;
+    --book-opacity: .48;
+    --book-delay: .13s;
+    background-color: #755f42;
+}
+
+.preview-ambient-book--3 {
+    --book-x: calc(6.25rem - var(--pp));
+    --book-y: 4.2rem;
+    --book-rotation: -14deg;
+    --book-scale: .78;
+    --book-opacity: .58;
+    --book-delay: .22s;
+    background-color: #506c63;
+}
+
+.preview-ambient-book--4 {
+    --book-x: calc(var(--pp) - 6.25rem);
+    --book-y: 4.2rem;
+    --book-rotation: 14deg;
+    --book-scale: .78;
+    --book-opacity: .58;
+    --book-delay: .28s;
+    background-color: #523f36;
+}
+
+.preview-ambient-book--5 {
+    --book-x: calc(var(--pp) - 1.25rem);
+    --book-y: .7rem;
+    --book-rotation: 5deg;
+    --book-scale: 1.03;
+    --book-opacity: .48;
+    --book-delay: .17s;
+    background-color: #31595a;
+}
+
+.preview-ambient-book--6 {
+    --book-x: calc(var(--pp) + 3.75rem);
+    --book-y: 2.8rem;
+    --book-rotation: 10deg;
+    --book-scale: .88;
+    --book-opacity: .34;
+    --book-delay: .08s;
+    background-color: #776641;
+}
+
+.book-welcome[open] ~ .preview .preview-ambient-book {
+    animation-play-state: paused;
+}
+
+@keyframes previewBookArrival {
+    from {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 5rem)) rotate(0) scale(.38);
+    }
+
+    to {
+        opacity: var(--book-opacity);
+        transform: translate(calc(-50% + var(--book-x)), calc(-50% + var(--book-y))) rotate(var(--book-rotation)) scale(var(--book-scale));
+    }
+}
+
 .preview-stage {
     position: relative;
     z-index: 1;
@@ -845,6 +991,10 @@
         padding: .65rem max(.65rem, env(safe-area-inset-right)) max(.7rem, env(safe-area-inset-bottom)) max(.65rem, env(safe-area-inset-left));
     }
 
+    .preview-library {
+        display: none;
+    }
+
     .preview-stage {
         width: var(--pp);
     }
@@ -948,6 +1098,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .preview-library {
+        display: none;
+    }
+
+    .preview-ambient-book {
+        animation: none !important;
+    }
+
     .preview-stage,
     .preview-sheet,
     .preview-controls button {
