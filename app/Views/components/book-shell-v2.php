@@ -1,8 +1,8 @@
-<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260815-ambient1">
+<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260815-production1">
 
 <?php require __DIR__ . '/book-welcome.php'; ?>
 
-<main class="preview" data-preview data-state="0">
+<main class="preview" data-preview data-state="0" aria-label="Archon Publishing House interactive book">
     <div class="preview-library" aria-hidden="true">
         <span class="preview-ambient-book preview-ambient-book--1"></span>
         <span class="preview-ambient-book preview-ambient-book--2"></span>
@@ -12,7 +12,7 @@
         <span class="preview-ambient-book preview-ambient-book--6"></span>
     </div>
 
-    <div class="preview-stage" data-stage aria-label="Your personalized eBook journey">
+    <div class="preview-stage" data-stage role="region" aria-label="Your personalized eBook journey">
         <?php for ($i = 0; $i < 10; $i++): ?>
             <section class="preview-sheet" data-sheet="<?= $i ?>">
                 <article
@@ -28,7 +28,7 @@
         <i class="preview-spine" aria-hidden="true"></i>
     </div>
 
-    <div class="preview-controls" aria-label="Book controls">
+    <div class="preview-controls" role="group" aria-label="Book controls">
         <div class="preview-controls__navigation">
             <button type="button" data-prev>
                 <span aria-hidden="true">&larr;</span>
@@ -48,6 +48,20 @@
     </div>
 
     <?php require __DIR__ . '/book-pages.php'; ?>
+
+    <noscript>
+        <section class="preview-noscript">
+            <p class="book-kicker">ARCHON PUBLISHING HOUSE</p>
+            <h1>Your eBook journey</h1>
+            <p>Explore our professional eBook-writing services using the accessible pages below.</p>
+            <nav aria-label="Website sections">
+                <a href="/services">Writing services</a>
+                <a href="/authors">Authors and selected work</a>
+                <a href="/quote">Request a quote</a>
+                <a href="/contact">Contact us</a>
+            </nav>
+        </section>
+    </noscript>
 </main>
 
-<script src="/assets/js/book-preview.js?v=20260815" defer></script>
+<script src="/assets/js/book-preview.js?v=20260815-production1" defer></script>

@@ -1,6 +1,6 @@
 <?php
 namespace App\Core;
-use App\Controllers\{SiteController,ShopController,AuthController,AccountController,AdminController};
+use App\Controllers\{SiteController,AuthController,AdminController};
 
 final class Application {
     private string $path;
@@ -9,13 +9,13 @@ final class Application {
         header("Content-Security-Policy: default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'");
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $route = $this->path;
-        $site = new SiteController; $shop = new ShopController; $auth = new AuthController; $account = new AccountController; $admin = new AdminController;
+        $site = new SiteController; $auth = new AuthController; $admin = new AdminController;
         if ($route === '/' && $method === 'GET') $site->home();
         if ($route === '/book-preview' && $method === 'GET') $site->bookPreview();
         if ($route === '/contents' && $method === 'GET') $site->contents();
         if ($route === '/sitemap.xml' && $method === 'GET') $site->sitemap();
         if ($route === '/about' && $method === 'GET') $site->page('About Archon', 'about');
-        if (in_array($route, ['/privacy','/terms','/refund-policy','/download-policy'], true) && $method === 'GET') $site->policy(ltrim($route,'/'));
+        if (in_array($route, ['/privacy','/terms'], true) && $method === 'GET') $site->policy(ltrim($route,'/'));
         if ($route === '/contact' && $method === 'GET') $site->contact();
         if ($route === '/contact' && $method === 'POST') $site->sendContact();
         if ($route === '/newsletter' && $method === 'POST') $site->newsletter();
@@ -25,21 +25,14 @@ final class Application {
         if ($route === '/quote' && $method === 'GET') $site->quote();
         if ($route === '/quote' && $method === 'POST') $site->sendQuote();
         if ($route === '/authors' && $method === 'GET') $site->authors();
-        if ($route === '/categories' && $method === 'GET') $site->categories();
         if (preg_match('#^/authors/([a-z0-9-]+)$#', $route, $m) && $method === 'GET') $site->author($m[1]);
         if ($route === '/blog' && $method === 'GET') $site->blog();
         if (preg_match('#^/blog/([a-z0-9-]+)$#', $route, $m) && $method === 'GET') $site->article($m[1]);
-        // Store/customer routes are deliberately not exposed in the services-only public site.
-        if ($route === '/login' && $method === 'GET') $auth->loginForm();
-        if ($route === '/login' && $method === 'POST') $auth->login();
-        if ($route === '/register' && $method === 'GET') $auth->registerForm();
-        if ($route === '/register' && $method === 'POST') $auth->register();
-        if ($route === '/logout' && $method === 'POST') $auth->logout();
-        if ($route === '/forgot-password' && $method === 'GET') $auth->forgotForm();
-        if ($route === '/forgot-password' && $method === 'POST') $auth->forgot();
-        if ($route === '/reset-password' && $method === 'GET') $auth->resetForm();
-        if ($route === '/reset-password' && $method === 'POST') $auth->reset();
-        if ($route === '/verify-email' && $method === 'GET') $auth->verifyEmail();
+        // Store and customer-account routes remain dormant in the services-only public site.
+        if ($route === '/admin/login' && $method === 'GET') $auth->adminLoginForm();
+        if ($route === '/admin/login' && $method === 'POST') $auth->adminLogin();
+        if ($route === '/admin/logout' && $method === 'POST') $auth->adminLogout();
+        if (in_array($route, ['/admin/login','/admin/logout'], true)) View::render('errors/404', [], 404);
         if ($route === '/admin' && $method === 'GET') $admin->dashboard();
         if ($route === '/admin/book-files' && $method === 'GET') $admin->bookFiles();
         if ($route === '/admin/book-files' && $method === 'POST') $admin->uploadBookFile();

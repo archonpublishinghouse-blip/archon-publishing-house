@@ -2,17 +2,26 @@
 use App\Core\Security;
 
 $siteTitle = $title ?? 'Your eBook Journey | Archon Publishing House';
+$description = $metaDescription ?? 'Archon Publishing House helps turn ideas, outlines and manuscripts into professionally written eBooks.';
+$robots = $metaRobots ?? 'index,follow';
 $baseUrl = rtrim(\App\Core\Env::get('APP_URL', 'http://localhost'), '/');
-$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/book-preview', PHP_URL_PATH) ?: '/book-preview';
-$canonical = $baseUrl . $requestPath;
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+$canonicalRoute = $canonicalPath ?? $requestPath;
+$canonicalRoute = '/' . ltrim($canonicalRoute, '/');
+$canonical = $baseUrl . $canonicalRoute;
 ?>
 <!doctype html>
 <html lang="en">
 <head>
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1">
- <meta name="description" content="Preview your personalized Archon eBook writing journey.">
+ <meta name="description" content="<?=Security::e($description)?>">
+ <meta name="robots" content="<?=Security::e($robots)?>">
  <link rel="canonical" href="<?=Security::e($canonical)?>">
+ <meta property="og:type" content="website">
+ <meta property="og:title" content="<?=Security::e($siteTitle)?>">
+ <meta property="og:description" content="<?=Security::e($description)?>">
+ <meta property="og:url" content="<?=Security::e($canonical)?>">
  <title><?=Security::e($siteTitle)?></title>
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

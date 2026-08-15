@@ -6,6 +6,36 @@ use App\Services\CartService;
 use App\Services\RememberService;
 
 final class AuthController extends Controller {
+    public function adminLoginForm(): never {
+        if ($this->admin()) Security::redirect('/admin');
+        $this->render('auth/admin-login', ['title'=>'Archon Administration','__layout'=>'admin']);
+    }
+    public function adminLogin(): never {
+        $this->requirePost();
+        if (!Security::rateLimit('admin-login', 5, 900)) {
+            Security::flash('error', 'Too many login attempts. Please try again later.');
+            Security::redirect('/admin/login');
+        }
+        $email=filter_var($_POST['email']??'', FILTER_VALIDATE_EMAIL);
+        $password=$_POST['password']??'';
+        $admin=$email?$this->one('SELECT * FROM admins WHERE email=? AND is_active=1',[$email]):null;
+        if (!$admin||!password_verify($password,$admin['password_hash'])) {
+            Security::flash('error','The email or password is incorrect.');
+            Security::redirect('/admin/login');
+        }
+        session_regenerate_id(true);
+        $_SESSION['admin']=['id'=>$admin['id'],'name'=>$admin['name'],'email'=>$admin['email'],'role'=>'super_admin'];
+        $this->db()->prepare('UPDATE admins SET last_login_at=NOW() WHERE id=?')->execute([$admin['id']]);
+        Security::flash('success','Admin session started.');
+        Security::redirect('/admin');
+    }
+    public function adminLogout(): never {
+        $this->requirePost();
+        unset($_SESSION['admin']);
+        session_regenerate_id(true);
+        Security::flash('success','You have been signed out.');
+        Security::redirect('/admin/login');
+    }
     public function loginForm(): never {$this->render('auth/login');}
     public function registerForm(): never {$this->render('auth/register');}
     public function login(): never {$this->requirePost();if(!Security::rateLimit('login',5,900)){Security::flash('error','Too many login attempts. Please try again later.');Security::redirect('/login');}$email=filter_var($_POST['email']??'',FILTER_VALIDATE_EMAIL);$password=$_POST['password']??'';$admin=$email?$this->one('SELECT * FROM admins WHERE email=? AND is_active=1',[$email]):null;if($admin&&password_verify($password,$admin['password_hash'])){session_regenerate_id(true);$_SESSION['admin']=['id'=>$admin['id'],'name'=>$admin['name'],'email'=>$admin['email'],'role'=>'super_admin'];$this->db()->prepare('UPDATE admins SET last_login_at=NOW() WHERE id=?')->execute([$admin['id']]);Security::flash('success','Admin session started.');Security::redirect('/admin');}$customer=$email?$this->one('SELECT * FROM customers WHERE email=? AND is_active=1',[$email]):null;if(!$customer||!password_verify($password,$customer['password_hash'])){Security::flash('error','The email or password is incorrect.');Security::redirect('/login');}session_regenerate_id(true);$_SESSION['customer']=['id'=>$customer['id'],'name'=>$customer['name'],'email'=>$customer['email']];CartService::mergeIntoCustomer((int)$customer['id']);if(!empty($_POST['remember']))RememberService::issue((int)$customer['id']);Security::flash('success','Welcome back, '.$customer['name'].'. Your saved cart is ready.');Security::redirect('/account');}

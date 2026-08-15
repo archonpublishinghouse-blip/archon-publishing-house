@@ -7,15 +7,24 @@ use App\Services\BookChapterService;
 
 final class SiteController extends Controller {
     public function home(): never {
-        $data=['books'=>[], 'services'=>[], 'authors'=>[], 'posts'=>[], 'testimonials'=>[]];
-        if ($this->dbAvailable()) { $data['books']=$this->all("SELECT b.*, a.name author_name FROM books b JOIN authors a ON a.id=b.author_id WHERE b.is_active=1 ORDER BY b.is_featured DESC, b.id DESC LIMIT 4"); $data['services']=$this->all('SELECT * FROM services WHERE is_active=1 ORDER BY display_order LIMIT 8'); $data['authors']=$this->all('SELECT * FROM authors WHERE is_active=1 ORDER BY is_featured DESC LIMIT 4'); $data['posts']=$this->all("SELECT * FROM blog_posts WHERE status='published' ORDER BY published_at DESC LIMIT 3"); $data['testimonials']=$this->all('SELECT * FROM testimonials WHERE is_active=1 LIMIT 4'); } else {$data['services']=DemoContent::services();$data['authors']=DemoContent::authors();$data['posts']=DemoContent::posts();$data['testimonials']=DemoContent::testimonials();}
-        $data['chapters']=BookChapterService::chapters();
-        $data['bookChapter']='home';
-        $data['__layout']='book';
-        $this->render('site/home',$data);
+        $data = $this->bookJourneyData();
+        $data['title'] = 'Professional eBook Writing Services | Archon Publishing House';
+        $data['metaDescription'] = 'Turn your idea, outline, manuscript or business concept into a professionally written eBook with Archon Publishing House.';
+        $data['canonicalPath'] = '/';
+        $data['metaRobots'] = 'index,follow';
+        $data['__layout'] = 'book-preview';
+        $this->render('site/book-preview', $data);
     }
-    public function contents(): never {$this->render('site/contents',['title'=>'Table of Contents | Archon Publishing House','chapters'=>BookChapterService::chapters(),'bookChapter'=>'contents','__layout'=>'book']);}
-    public function bookPreview(): never {$data=['books'=>[], 'services'=>[], 'authors'=>[], 'posts'=>[], 'testimonials'=>[],'__layout'=>'book-preview'];if($this->dbAvailable()){$data['services']=$this->all('SELECT * FROM services WHERE is_active=1 ORDER BY display_order LIMIT 8');$data['authors']=$this->all('SELECT * FROM authors WHERE is_active=1 ORDER BY is_featured DESC LIMIT 4');$data['testimonials']=$this->all('SELECT * FROM testimonials WHERE is_active=1 LIMIT 4');}else{$data['services']=DemoContent::services();$data['authors']=DemoContent::authors();$data['testimonials']=DemoContent::testimonials();}$this->render('site/book-preview',$data);}
+    public function contents(): never {$this->render('site/contents',['title'=>'Table of Contents | Archon Publishing House','chapters'=>BookChapterService::chapters()]);}
+    public function bookPreview(): never {
+        $data = $this->bookJourneyData();
+        $data['title'] = 'Your eBook Journey Preview | Archon Publishing House';
+        $data['metaDescription'] = 'Preview the personalized Archon eBook writing journey.';
+        $data['canonicalPath'] = '/';
+        $data['metaRobots'] = 'noindex,follow';
+        $data['__layout'] = 'book-preview';
+        $this->render('site/book-preview', $data);
+    }
     public function sitemap(): never {$paths=['/','/services','/authors','/about','/blog','/contact','/quote','/privacy','/terms'];try{foreach($this->all('SELECT slug FROM services WHERE is_active=1') as $row)$paths[]='/services/'.rawurlencode($row['slug']);foreach($this->all('SELECT slug FROM authors WHERE is_active=1') as $row)$paths[]='/authors/'.rawurlencode($row['slug']);foreach($this->all("SELECT slug FROM blog_posts WHERE status='published'") as $row)$paths[]='/blog/'.rawurlencode($row['slug']);}catch(\Throwable){}$base=rtrim(\App\Core\Env::get('APP_URL','http://localhost'),'/');header('Content-Type: application/xml; charset=UTF-8');echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";foreach(array_unique($paths) as $path)echo '<url><loc>'.Security::e($base.$path).'</loc></url>'."\n";echo '</urlset>';exit;}
     public function page(string $title, string $template): never { $this->render('site/'.$template,compact('title')); }
     public function policy(string $key): never { $titles=['privacy'=>'Privacy Policy','terms'=>'Terms & Conditions','refund-policy'=>'Refund Policy','download-policy'=>'Download Policy']; $this->render('site/policy',['title'=>$titles[$key]??'Policy','key'=>$key]); }
@@ -32,5 +41,28 @@ final class SiteController extends Controller {
     public function sendQuote(): never { $this->requirePost();if(!Security::rateLimit('quote',3,3600)){Security::flash('error','Please wait before submitting another request.');Security::redirect('/quote');}$name=trim($_POST['name']??'');$email=filter_var($_POST['email']??'',FILTER_VALIDATE_EMAIL);$description=trim($_POST['description']??'');if(!$name||!$email||strlen($description)<20||empty($_POST['consent'])){Security::flash('error','Please complete the form, including consent.');Security::redirect('/quote');}$pdo=$this->db();$pdo->prepare('INSERT INTO quote_requests (name,email,phone,service_id,book_title,genre,word_count,project_stage,completion_date,budget_range,description,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,\'new\')')->execute([$name,$email,trim($_POST['phone']??''),($_POST['service_id']?:null),trim($_POST['book_title']??''),trim($_POST['genre']??''),trim($_POST['word_count']??''),trim($_POST['project_stage']??''),($_POST['completion_date']?:null),trim($_POST['budget_range']??''),$description]);$quoteId=(int)$pdo->lastInsertId();$file=$_FILES['attachment']??null;if($file&&$file['error']!==UPLOAD_ERR_NO_FILE){$allowed=['application/pdf'=>'pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document'=>'docx','application/msword'=>'doc'];$max=(int)(\App\Core\Env::get('MAX_QUOTE_ATTACHMENT_MB','10'))*1024*1024;$mime=(new \finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);$extension=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION));if($file['error']!==UPLOAD_ERR_OK||$file['size']>$max||!isset($allowed[$mime])||$allowed[$mime]!==$extension){Security::flash('error','Attachment must be a PDF, DOC or DOCX under the configured size limit.');Security::redirect('/quote');}$stored=bin2hex(random_bytes(20)).'.'.$extension;$target=dirname(__DIR__,2).'/private/quote-attachments/'.$stored;if(!move_uploaded_file($file['tmp_name'],$target)){Security::flash('error','We could not safely store that attachment. Please try again.');Security::redirect('/quote');}$pdo->prepare('INSERT INTO quote_attachments(quote_request_id,storage_name,original_name,mime_type,file_size) VALUES(?,?,?,?,?)')->execute([$quoteId,$stored,basename($file['name']),$mime,$file['size']]);}MailService::send($email,'Your Archon consultation request','Thank you for sharing your project. Our editorial team will review it and be in touch.');Security::flash('success','Your consultation request is in our editorial inbox.');Security::redirect('/quote'); }
     public function newsletter(): never { $this->requirePost();if(!Security::rateLimit('newsletter',4,3600)){Security::flash('error','Please wait before trying again.');Security::redirect('/');}$email=filter_var($_POST['email']??'',FILTER_VALIDATE_EMAIL);if(!$email||empty($_POST['consent'])){Security::flash('error','Enter a valid email and confirm consent.');Security::redirect('/');}$token=bin2hex(random_bytes(24));$this->db()->prepare("INSERT INTO newsletter_subscribers (email,unsubscribe_token,status,consented_at) VALUES (?,?, 'active', NOW()) ON DUPLICATE KEY UPDATE status='active', consented_at=NOW()")->execute([$email,$token]);$subscriber=$this->one('SELECT unsubscribe_token FROM newsletter_subscribers WHERE email=?',[$email]);MailService::send($email,'Welcome to the Archon Letter','Thank you for subscribing. Manage your subscription here: /unsubscribe?token='.($subscriber['unsubscribe_token']??''));Security::flash('success','You are subscribed to Archon notes.');Security::redirect('/'); }
     public function unsubscribe(): never {$token=trim($_GET['token']??'');if(!preg_match('/^[a-f0-9]{48}$/',$token))$this->render('errors/404',[],404);$statement=$this->db()->prepare("UPDATE newsletter_subscribers SET status='unsubscribed' WHERE unsubscribe_token=?");$statement->execute([$token]);$this->render('site/unsubscribe',['success'=>$statement->rowCount()>0]);}
+    private function bookJourneyData(): array {
+        $data = [
+            'books' => [],
+            'services' => [],
+            'authors' => [],
+            'posts' => [],
+            'testimonials' => [],
+            'chapters' => BookChapterService::chapters(),
+        ];
+
+        if ($this->dbAvailable()) {
+            $data['services'] = $this->all('SELECT * FROM services WHERE is_active=1 ORDER BY display_order LIMIT 8');
+            $data['authors'] = $this->all('SELECT * FROM authors WHERE is_active=1 ORDER BY is_featured DESC LIMIT 4');
+            $data['testimonials'] = $this->all('SELECT * FROM testimonials WHERE is_active=1 LIMIT 4');
+        } else {
+            $data['services'] = DemoContent::services();
+            $data['authors'] = DemoContent::authors();
+            $data['testimonials'] = DemoContent::testimonials();
+        }
+
+        return $data;
+    }
+
     private function dbAvailable(): bool { try{$this->db();return true;}catch(\Throwable){return false;} }
 }

@@ -21,4 +21,6 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     ]);
     session_start();
 }
-App\Services\RememberService::restore();
+if (App\Core\Env::get('MARKETPLACE_ENABLED', 'false') === 'true') {
+    App\Services\RememberService::restore();
+}

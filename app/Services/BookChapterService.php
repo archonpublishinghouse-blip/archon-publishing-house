@@ -4,14 +4,18 @@ namespace App\Services;
 final class BookChapterService {
     public static function chapters(): array {
         return [
-            ['number'=>'I','label'=>'Home','title'=>'A beginning for your book','href'=>'/','available'=>true],
-            ['number'=>'II','label'=>'Services','title'=>'eBook writing services','href'=>'/services','available'=>true],
-            ['number'=>'III','label'=>'Books','title'=>'Our work and portfolio','href'=>null,'available'=>false],
-            ['number'=>'IV','label'=>'Authors','title'=>'Authors we have worked with','href'=>'/authors','available'=>true],
-            ['number'=>'V','label'=>'Publishing Process','title'=>'How your eBook takes shape','href'=>'/','available'=>true],
-            ['number'=>'VI','label'=>'Reviews','title'=>'Words from our clients','href'=>'/','available'=>true],
-            ['number'=>'VII','label'=>'Contact Us','title'=>'Start a conversation','href'=>'/contact','available'=>true],
-            ['number'=>'VIII','label'=>'Begin Your Publishing Journey','title'=>'Request a quote','href'=>'/quote','available'=>true],
+            ['page'=>'cover','number'=>'','label'=>'Cover','title'=>'Your personalized eBook journey','href'=>'/','available'=>true],
+            ['page'=>'contents','number'=>'I','label'=>'Table of Contents','title'=>'Inside your journey','href'=>'/contents','available'=>true],
+            ['page'=>'home','number'=>'II','label'=>'Home','title'=>'Turn your idea into an eBook','href'=>'/','available'=>true],
+            ['page'=>'services','number'=>'III','label'=>'eBook Writing Services','title'=>'Professional support for your eBook','href'=>'/services','available'=>true],
+            ['page'=>'genres','number'=>'IV','label'=>'Genres and Writing Expertise','title'=>'Writing expertise for your subject','href'=>'/services','available'=>true],
+            ['page'=>'process','number'=>'V','label'=>'Our eBook Writing Process','title'=>'How your eBook takes shape','href'=>'/services','available'=>true],
+            ['page'=>'work','number'=>'VI','label'=>'Our Work / eBook Portfolio','title'=>'Examples of our publishing craft','href'=>'/authors','available'=>true],
+            ['page'=>'authors','number'=>'VII','label'=>'Authors We Have Worked With','title'=>'Writers supported by Archon','href'=>'/authors','available'=>true],
+            ['page'=>'reviews','number'=>'VIII','label'=>'Client Reviews','title'=>'Words from our clients','href'=>'/','available'=>true],
+            ['page'=>'quote','number'=>'IX','label'=>'Start Your eBook / Request a Quote','title'=>'Share your idea with our team','href'=>'/quote','available'=>true],
+            ['page'=>'contact','number'=>'X','label'=>'Contact Us','title'=>'Start a conversation','href'=>'/contact','available'=>true],
+            ['page'=>'final','number'=>'XI','label'=>'Back Cover / Final Call to Action','title'=>'Bring your eBook to life','href'=>'/quote','available'=>true],
         ];
     }
 }

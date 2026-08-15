@@ -8,7 +8,7 @@ A framework-free PHP 8.2+ website for authors seeking eBook writing and publishi
 - A keyboard/swipe-friendly, reduced-motion-aware interactive services book.
 - The public navigation is intentionally services-only: no client sign-in, bag, cart, checkout, or store route is exposed.
 - Responsive admin dashboard and protected management for authors, services, posts, enquiries, contact messages, and supporting content.
-- MySQL schema, original demo content (8 books, 5 authors, 8 services, 3 articles, 4 testimonials), security headers, CSRF, password hashing, sessions, basic session rate limits and private storage.
+- MySQL schema, original demo content, security headers, CSRF, password hashing, sessions, basic session rate limits and private storage. Dormant marketplace tables and code are retained but disabled by default.
 
 ## Requirements
 
@@ -36,7 +36,7 @@ A framework-free PHP 8.2+ website for authors seeking eBook writing and publishi
    PowerShell: `$env:SEED_ADMIN_PASSWORD='Use-a-long-local-password'; php database/seed.php`.
 
 4. Point the Apache virtual host document root to `public/`, or browse the project using your local PHP/Apache stack. In development you can use `php -S localhost:8000 -t public public/index.php`.
-5. Open `http://localhost:8000`. Sign in as the seeded administrator, then open `/admin`. The seeded customer is `reader@archon.test` / `Reader12345`.
+5. Open `http://localhost:8000`. Administrators sign in at `/admin/login`; customer sign-in and marketplace routes are intentionally unavailable.
 
 ## Shared hosting / cPanel
 
@@ -45,9 +45,9 @@ A framework-free PHP 8.2+ website for authors seeking eBook writing and publishi
 - Ensure PHP can write to `storage/logs` and `public/uploads`; keep `private/books`, `private/samples` and `private/quote-attachments` non-public.
 - Import `database/schema.sql`, seed only for a demonstration installation, then replace/delete demo content before launch.
 
-## Payments and mail
+## Dormant marketplace and mail
 
-Demo checkout intentionally marks orders paid without handling a card. Manual bank transfer creates a pending order. No card data is collected or stored. Configure a live gateway adapter and verified webhook before using live payments.
+The retained store, customer-account, checkout, payment and download code is disabled while `MARKETPLACE_ENABLED=false`. Do not enable it without a separate security, payment and fulfilment review.
 
 `MAIL_DRIVER=log` writes development reset tokens to `storage/logs/mail.log`. Add SMTP transport credentials and production email templates before launch.
 
@@ -65,4 +65,4 @@ The supplied parchment logo is retained at `public/assets/images/brand/archon-lo
 
 ## Verification
 
-Run `php -l` over all PHP files. Import the schema and seed it before testing the catalogue, customer checkout, authenticated downloads, forms and admin screens in a MySQL-enabled environment.
+Run `php -l` over all PHP files. Import the schema and seed it before testing public service routes, enquiry forms and admin screens in a MySQL-enabled environment.

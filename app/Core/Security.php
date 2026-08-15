@@ -4,7 +4,16 @@ namespace App\Core;
 final class Security {
     public static function e(?string $value): string { return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
     public static function csrf(): string { return $_SESSION['_csrf'] ??= bin2hex(random_bytes(32)); }
-    public static function verifyCsrf(): bool { return hash_equals($_SESSION['_csrf'] ?? '', $_POST['_token'] ?? ''); }
+    public static function verifyCsrf(): bool {
+        $sessionToken = $_SESSION['_csrf'] ?? null;
+        $submittedToken = $_POST['_token'] ?? null;
+
+        return is_string($sessionToken)
+            && $sessionToken !== ''
+            && is_string($submittedToken)
+            && $submittedToken !== ''
+            && hash_equals($sessionToken, $submittedToken);
+    }
     public static function flash(string $key, ?string $value = null): ?string {
         if ($value !== null) { $_SESSION['_flash'][$key] = $value; return null; }
         $value = $_SESSION['_flash'][$key] ?? null; unset($_SESSION['_flash'][$key]); return $value;
