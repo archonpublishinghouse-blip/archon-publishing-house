@@ -49,6 +49,16 @@
             .preview-turn-overlay.next-in{animation:previewNextIn .32s cubic-bezier(0,0,.2,1) both}
             .preview-turn-overlay.previous-out{animation:previewPreviousOut .32s cubic-bezier(.42,0,1,1) both}
             .preview-turn-overlay.previous-in{animation:previewPreviousIn .32s cubic-bezier(0,0,.2,1) both}
+            .preview-mobile-turn-layer{isolation:isolate;perspective:none}
+            .preview-mobile-turn-layer .preview-turn-overlay,
+            .preview-mobile-turn-layer .preview-turn-underlay{transform-style:flat}
+            .preview-mobile-turn-layer .preview-turn-overlay.mobile-next-out{animation:previewMobileNextOut .42s cubic-bezier(.22,.72,.24,1) both}
+            .preview-mobile-turn-layer .preview-turn-overlay.mobile-previous-out{animation:previewMobilePreviousOut .42s cubic-bezier(.22,.72,.24,1) both}
+            .preview-mobile-turn-edge{position:absolute;z-index:3;top:0;bottom:0;width:clamp(14px,5vw,22px);opacity:0;pointer-events:none}
+            .preview-mobile-turn-layer.is-forward .preview-mobile-turn-edge{right:0;background:linear-gradient(90deg,rgba(42,28,8,0),rgba(42,28,8,.2) 42%,rgba(255,249,220,.58) 58%,rgba(255,249,220,0));transform:translateX(50%)}
+            .preview-mobile-turn-layer.is-backward .preview-mobile-turn-edge{left:0;background:linear-gradient(90deg,rgba(255,249,220,0),rgba(255,249,220,.58) 42%,rgba(42,28,8,.2) 58%,rgba(42,28,8,0));transform:translateX(-50%)}
+            .preview-mobile-turn-layer.is-forward .preview-mobile-turn-edge.is-active{animation:previewMobileEdgeForward .42s cubic-bezier(.22,.72,.24,1) both}
+            .preview-mobile-turn-layer.is-backward .preview-mobile-turn-edge.is-active{animation:previewMobileEdgeBackward .42s cubic-bezier(.22,.72,.24,1) both}
             .preview-settled-layer{position:absolute;inset:0;z-index:10;display:grid;grid-template-columns:1fr 1fr;pointer-events:auto}
             .preview-settled-page{position:relative;overflow:hidden;padding:clamp(1.7rem,3.1vw,4rem);background:#f2ebd0;background-image:radial-gradient(rgba(91,69,28,.13) .5px,transparent .7px);background-size:7px 7px;color:#0a2223}
             .preview-settled-layer.is-hidden,.preview-settled-page.is-blank{visibility:hidden}
@@ -58,6 +68,10 @@
             @keyframes previewNextIn{from{transform:rotateY(89.9deg)}to{transform:rotateY(0deg)}}
             @keyframes previewPreviousOut{from{transform:rotateY(0deg)}to{transform:rotateY(89.9deg)}}
             @keyframes previewPreviousIn{from{transform:rotateY(-89.9deg)}to{transform:rotateY(0deg)}}
+            @keyframes previewMobileNextOut{from{clip-path:inset(0 0 0 0);transform:translateX(0) scale(1);opacity:1}to{clip-path:inset(0 100% 0 0);transform:translateX(-.6rem) scale(.995);opacity:.96}}
+            @keyframes previewMobilePreviousOut{from{clip-path:inset(0 0 0 0);transform:translateX(0) scale(1);opacity:1}to{clip-path:inset(0 0 0 100%);transform:translateX(.6rem) scale(.995);opacity:.96}}
+            @keyframes previewMobileEdgeForward{0%{opacity:0;transform:translateX(50%)}12%{opacity:.82}82%{opacity:.68}100%{opacity:0;transform:translateX(calc(0px - var(--pp) + 50%))}}
+            @keyframes previewMobileEdgeBackward{0%{opacity:0;transform:translateX(-50%)}12%{opacity:.82}82%{opacity:.68}100%{opacity:0;transform:translateX(calc(var(--pp) - 50%))}}
             @media(max-width:800px){.preview-turn-overlay,.preview-turn-underlay{left:0!important;right:auto!important;width:100%}.preview-settled-layer{display:block}.preview-settled-page.is-left{display:none}.preview-settled-page.is-right{width:100%;height:100%}}
             @media(prefers-reduced-motion:reduce){.preview-turn-overlay{animation-duration:.01ms!important}}
         `;
@@ -83,12 +97,23 @@
         const coverTitle=document.createElement('h1');
         const coverByline=document.createElement('p');
         const coverImprint=document.createElement('p');
+        const insideFrontLogo=document.createElement('img');
+        const insideFrontLabel=document.createElement('span');
 
         cover.replaceChildren();
         coverTitle.textContent='YOUR EBOOK JOURNEY';
         coverImprint.textContent='Brought to Life by Archon Publishing House';
         cover.append(coverTitle,coverByline,coverImprint);
-        insideFront.textContent='Inside Front Cover';
+        insideFrontLogo.className='preview-inside-cover-logo';
+        insideFrontLogo.src='/assets/images/brand/archon-logo-transparent.png';
+        insideFrontLogo.alt='Archon Publishing House';
+        insideFrontLogo.width=500;
+        insideFrontLogo.height=500;
+        insideFrontLogo.decoding='async';
+        insideFrontLogo.draggable=false;
+        insideFrontLabel.className='preview-inside-cover-label';
+        insideFrontLabel.textContent='Inside Front Cover';
+        insideFront.replaceChildren(insideFrontLogo,insideFrontLabel);
         insideBack.textContent='Inside Back Cover';
         backCover.textContent='ARCHON PUBLISHING HOUSE';
         colophon.textContent='Colophon';
@@ -193,6 +218,20 @@
                 if(folio)folio.textContent=String(pageNumber);
             }
         };
+        const appendFace=(target,faceName)=>{
+            target.replaceChildren();
+            target.removeAttribute('data-face');
+            const source=book.querySelector(`[data-face="${faceName}"]`);
+            if(!source)return;
+            const clone=source.cloneNode(true);
+            clone.classList.remove('front','back');
+            clone.classList.add('preview-mobile-face');
+            clone.removeAttribute('style');
+            clone.removeAttribute('aria-hidden');
+            clone.inert=false;
+            target.append(clone);
+            personalizeWithin(target);
+        };
         const pagesForDesktopState=state=>{
             if(state===1)return {left:0,right:1};
             if(state>=2&&state<=8)return {left:state*2-2,right:state*2-1};
@@ -213,10 +252,10 @@
                 const view=mobileViewFor(state,viewId);
                 appendPage(settledLeft,0);
                 if(view.kind==='page')appendPage(settledRight,view.pageNumber);
-                else appendPage(settledRight,0);
-                settledLayer.classList.toggle('is-hidden',view.kind!=='page');
+                else appendFace(settledRight,view.face);
+                settledLayer.classList.remove('is-hidden');
                 settledLeft.classList.add('is-blank');
-                settledRight.classList.toggle('is-blank',view.kind!=='page');
+                settledRight.classList.remove('is-blank');
             }else{
                 const pages=pagesForDesktopState(state);
                 appendPage(settledLeft,pages.left);
@@ -229,8 +268,8 @@
         };
         const updateCoverVisibility=(state,viewId)=>{
             if(mode==='mobile'){
-                sheets[0].style.visibility=viewId==='cover'||viewId==='inside-front'?'visible':'hidden';
-                sheets[9].style.visibility=viewId==='inside-back'||viewId==='back-cover'?'visible':'hidden';
+                sheets[0].style.visibility='hidden';
+                sheets[9].style.visibility='hidden';
                 return;
             }
             sheets[0].style.visibility=state<=1?'visible':'hidden';
@@ -293,15 +332,9 @@
             if(!ready||isAnimating||dialogIsOpen())return;
 
             if(mode==='mobile'){
-                const view=mobileViewFor(currentState,activeViewId);
-                if(view.kind==='page'){
-                    settledLayer.setAttribute('aria-hidden','false');
-                    settledLayer.inert=false;
-                    setTreeInteractive(settledRight,true);
-                }else{
-                    const face=book.querySelector(`[data-face="${view.face}"]`);
-                    setTreeInteractive(face,true);
-                }
+                settledLayer.setAttribute('aria-hidden','false');
+                settledLayer.inert=false;
+                setTreeInteractive(settledRight,true);
                 return;
             }
 
@@ -505,24 +538,22 @@
         const turnMobileContent=(delta,target,token)=>{
             const currentView=mobileViewFor(currentState,activeViewId);
             const targetView=mobileViewFor(target,targetViewId);
-            const outgoingSide=delta>0?'right':'left';
-            const incomingSide=delta>0?'left':'right';
             const layer=document.createElement('div');
-            layer.className='preview-turn-layer';
+            layer.className=`preview-turn-layer preview-mobile-turn-layer ${delta>0?'is-forward':'is-backward'}`;
             layer.setAttribute('aria-hidden','true');
             layer.inert=true;
-            let underlay=copyReadableView(targetView,outgoingSide,'preview-turn-underlay');
-            const outgoing=copyReadableView(currentView,outgoingSide);
-            layer.append(underlay,outgoing);
+            const underlay=copyReadableView(targetView,'right','preview-turn-underlay');
+            const outgoing=copyReadableView(currentView,'right');
+            const edge=document.createElement('i');
+            edge.className='preview-mobile-turn-edge';
+            layer.append(underlay,outgoing,edge);
             stage.append(layer);
-            animateOverlay(outgoing,delta>0?'next-out':'previous-out',token,()=>{
-                outgoing.remove();
+            requestAnimationFrame(()=>{
+                if(token===transitionToken)edge.classList.add('is-active');
+            });
+            animateOverlay(outgoing,delta>0?'mobile-next-out':'mobile-previous-out',token,()=>{
                 switchSettledSpread(target,targetViewId);
-                underlay.remove();
-                underlay=copyReadableView(currentView,incomingSide,'preview-turn-underlay');
-                const incoming=copyReadableView(targetView,incomingSide);
-                layer.append(underlay,incoming);
-                animateOverlay(incoming,delta>0?'next-in':'previous-in',token,()=>finish(token));
+                finish(token);
             });
         };
         const transitionMilliseconds=element=>{
@@ -574,13 +605,8 @@
             });
         };
         const isPhysicalCoverMove=(from,to)=>{
-            if(mode==='desktop')return (from===0&&to===1)||(from===1&&to===0)||(from===9&&to===10)||(from===10&&to===9);
-            const fromId=mobileViews[from]?.id;
-            const toId=mobileViews[to]?.id;
-            return (fromId==='cover'&&toId==='inside-front')||
-                (fromId==='inside-front'&&toId==='cover')||
-                (fromId==='inside-back'&&toId==='back-cover')||
-                (fromId==='back-cover'&&toId==='inside-back');
+            if(mode==='mobile')return false;
+            return (from===0&&to===1)||(from===1&&to===0)||(from===9&&to===10)||(from===10&&to===9);
         };
         const physicalSheetForMove=(from,to)=>{
             if(mode==='desktop')return Math.max(from,to)<=1?0:9;

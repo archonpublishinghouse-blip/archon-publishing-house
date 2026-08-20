@@ -53,7 +53,7 @@ The retained store, customer-account, checkout, payment and download code is dis
 
 ## Logo and final client inputs
 
-The supplied parchment logo is retained at `public/assets/images/brand/archon-logo-source.jpg` and optimized for the site at `public/assets/images/brand/archon-logo-parchment.webp`. It is used in the header and footer. The small scanner overlay in the supplied source has deliberately not been altered, and no inaccurate transparent version was created. Supply a clean official SVG or transparent PNG before production, along with the final domain, email/phone/WhatsApp, address, currency/tax, SMTP, bank details, payment provider credentials, social profiles, legal policy text, actual book covers and protected eBook/sample files.
+The supplied parchment logo is retained at `public/assets/images/brand/archon-logo-source.jpg` and optimized for the site at `public/assets/images/brand/archon-logo-parchment.webp`. The newer transparent company logo is retained at `public/assets/images/brand/archon-logo-transparent.png` and is used on the interactive front cover. The scanner overlay in the parchment source has deliberately not been altered. Supply an official vector version when available, along with the final domain, email/phone/WhatsApp, address, SMTP, social profiles and final legal policy text.
 
 ## Security / operations checklist
 

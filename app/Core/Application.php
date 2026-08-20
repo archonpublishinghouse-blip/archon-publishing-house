@@ -34,6 +34,11 @@ final class Application {
         if ($route === '/admin/logout' && $method === 'POST') $auth->adminLogout();
         if (in_array($route, ['/admin/login','/admin/logout'], true)) View::render('errors/404', [], 404);
         if ($route === '/admin' && $method === 'GET') $admin->dashboard();
+        if ($route === '/admin/leads' && $method === 'GET') $admin->leads();
+        if (preg_match('#^/admin/leads/(quote|contact)/([0-9]+)$#', $route, $m) && $method === 'GET') $admin->leadDetail($m[1], (int)$m[2]);
+        if (preg_match('#^/admin/leads/(quote|contact)/([0-9]+)/status$#', $route, $m) && $method === 'POST') $admin->updateLeadStatus($m[1], (int)$m[2]);
+        if (preg_match('#^/admin/leads/(quote|contact)/([0-9]+)/notes$#', $route, $m) && $method === 'POST') $admin->addLeadNote($m[1], (int)$m[2]);
+        if (preg_match('#^/admin/leads/quote-attachments/([0-9]+)$#', $route, $m) && $method === 'GET') $admin->downloadQuoteAttachment((int)$m[1]);
         if ($route === '/admin/book-files' && $method === 'GET') $admin->bookFiles();
         if ($route === '/admin/book-files' && $method === 'POST') $admin->uploadBookFile();
         if ($route === '/admin/book-files/delete' && $method === 'POST') $admin->deleteBookFile();
