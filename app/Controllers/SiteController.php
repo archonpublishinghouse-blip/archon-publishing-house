@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Core\Security;
+use App\Core\{Security,Env};
 use App\Services\MailService;
 use App\Services\DemoContent;
 use App\Services\BookChapterService;
@@ -24,6 +24,62 @@ final class SiteController extends Controller {
         $data['metaRobots'] = 'noindex,follow';
         $data['__layout'] = 'book-preview';
         $this->render('site/book-preview', $data);
+    }
+    public function systemCheck(): never {
+        if (!hash_equals('archon-diagnostic-2026', (string)($_GET['key'] ?? ''))) {
+            $this->render('errors/404', [], 404);
+        }
+
+        $root = dirname(__DIR__, 2);
+        $envPath = $root . '/.env';
+        $host = Env::get('DB_HOST', '');
+        $port = Env::get('DB_PORT', '3306');
+        $database = Env::get('DB_DATABASE', '');
+        $username = Env::get('DB_USERNAME', '');
+        $password = Env::get('DB_PASSWORD', '');
+        $result = [
+            'timestamp' => date('c'),
+            'php_version' => PHP_VERSION,
+            'env_file_found' => is_file($envPath),
+            'env_file_readable' => is_readable($envPath),
+            'app_env' => Env::get('APP_ENV', ''),
+            'app_debug' => Env::get('APP_DEBUG', ''),
+            'app_url' => Env::get('APP_URL', ''),
+            'db_host' => $host,
+            'db_port' => $port,
+            'db_database' => $database,
+            'db_username' => $username,
+            'db_password_set' => $password !== '',
+            'db_password_placeholder' => $password === 'PASTE_HOSTINGER_DATABASE_PASSWORD_HERE',
+            'pdo_mysql_loaded' => extension_loaded('pdo_mysql'),
+            'database_connected' => false,
+            'database_error' => null,
+            'tables' => [],
+        ];
+
+        try {
+            $pdo = new \PDO(
+                sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $database),
+                $username,
+                $password,
+                [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC, \PDO::ATTR_TIMEOUT => 5]
+            );
+            $result['database_connected'] = true;
+            foreach (['admins', 'contact_messages', 'quote_requests', 'services'] as $table) {
+                try {
+                    $result['tables'][$table] = (int)$pdo->query("SELECT COUNT(*) FROM `$table`")->fetchColumn();
+                } catch (\Throwable $tableError) {
+                    $result['tables'][$table] = 'ERROR: ' . $tableError->getMessage();
+                }
+            }
+        } catch (\Throwable $error) {
+            $result['database_error'] = $error->getMessage();
+        }
+
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+        echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        exit;
     }
     public function sitemap(): never {$paths=['/','/services','/authors','/about','/blog','/contact','/quote','/privacy','/terms'];try{foreach($this->all('SELECT slug FROM services WHERE is_active=1') as $row)$paths[]='/services/'.rawurlencode($row['slug']);foreach($this->all('SELECT slug FROM authors WHERE is_active=1') as $row)$paths[]='/authors/'.rawurlencode($row['slug']);foreach($this->all("SELECT slug FROM blog_posts WHERE status='published'") as $row)$paths[]='/blog/'.rawurlencode($row['slug']);}catch(\Throwable){}$base=rtrim(\App\Core\Env::get('APP_URL','http://localhost'),'/');header('Content-Type: application/xml; charset=UTF-8');echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";foreach(array_unique($paths) as $path)echo '<url><loc>'.Security::e($base.$path).'</loc></url>'."\n";echo '</urlset>';exit;}
     public function page(string $title, string $template): never { $this->render('site/'.$template,compact('title')); }

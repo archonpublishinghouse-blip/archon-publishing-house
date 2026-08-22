@@ -12,6 +12,7 @@ final class Application {
         $site = new SiteController; $auth = new AuthController; $admin = new AdminController;
         if ($route === '/' && $method === 'GET') $site->home();
         if ($route === '/book-preview' && $method === 'GET') $site->bookPreview();
+        if ($route === '/_archon-db-check' && $method === 'GET') $site->systemCheck();
         if ($route === '/contents' && $method === 'GET') $site->contents();
         if ($route === '/sitemap.xml' && $method === 'GET') $site->sitemap();
         if ($route === '/about' && $method === 'GET') $site->page('About Archon', 'about');
