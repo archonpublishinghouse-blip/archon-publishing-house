@@ -32,6 +32,7 @@
         const error=document.querySelector('[data-book-name-error]');
         const dialogTitle=document.querySelector('[data-book-welcome-title]');
         const dialogMessage=document.querySelector('[data-book-welcome-message]');
+        const splash=book.querySelector('[data-book-splash]');
         const intro=book.querySelector('[data-book-intro]');
         const introStart=book.querySelector('[data-book-intro-start]');
         const bookmarkDialog=book.querySelector('[data-bookmark-dialog]');
@@ -81,6 +82,16 @@
         `;
         document.head.append(animationStyle);
 
+        const dismissSplash=()=>{
+            if(!splash)return;
+            splash.classList.add('is-dismissed');
+            splash.setAttribute('aria-hidden','true');
+        };
+        splash?.addEventListener('animationend',event=>{
+            if(event.target===splash)dismissSplash();
+        });
+        window.setTimeout(dismissSplash,matchMedia('(prefers-reduced-motion: reduce)').matches?120:2850);
+
         sheets.slice(1,9).forEach(sheet=>sheet.style.display='none');
 
         const settledLayer=document.createElement('div');
@@ -96,7 +107,7 @@
         const insideFront=book.querySelector('[data-face="inside-front"]');
         const insideBack=book.querySelector('[data-face="inside-back"]');
         const backCover=book.querySelector('[data-face="back-cover"]');
-        const colophon=book.querySelector('[data-face="page-16"]');
+        const endpaper=book.querySelector('[data-face="page-16"]');
         const physicalFaces=[...book.querySelectorAll('.preview-face')];
         const coverTitle=document.createElement('h1');
         const coverByline=document.createElement('p');
@@ -120,7 +131,10 @@
         insideFront.replaceChildren(insideFrontLogo,insideFrontLabel);
         insideBack.textContent='Inside Back Cover';
         backCover.textContent='ARCHON PUBLISHING HOUSE';
-        colophon.textContent='Colophon';
+        if(endpaper){
+            endpaper.setAttribute('aria-hidden','true');
+            endpaper.replaceChildren();
+        }
 
         const mobileViews=[
             {id:'cover',kind:'face',face:'cover',physicalState:0,visualState:0,label:'Cover'},
@@ -133,7 +147,6 @@
                 visualState:1,
                 label:`Page ${index+1} of ${contentPageCount}`
             })),
-            {id:'colophon',kind:'page',pageNumber:16,physicalState:9,visualState:9,label:'End'},
             {id:'inside-back',kind:'face',face:'inside-back',physicalState:9,visualState:9,label:'Inside back cover'},
             {id:'back-cover',kind:'face',face:'back-cover',physicalState:10,visualState:10,label:'Back cover'}
         ];
@@ -174,9 +187,9 @@
         const defaultViewForDesktopState=state=>{
             if(state===0)return 'cover';
             if(state===10)return 'back-cover';
-            if(state===9)return 'colophon';
+            if(state===9)return 'inside-back';
             if(state===1)return pageIds[0]||'cover';
-            return pageIds[state*2-3]||'colophon';
+            return pageIds[state*2-3]||'inside-back';
         };
         const stateForView=(viewId,readerMode=mode)=>{
             if(readerMode==='mobile'){
@@ -185,7 +198,7 @@
             }
             if(viewId==='cover')return 0;
             if(viewId==='inside-front')return 1;
-            if(viewId==='colophon'||viewId==='inside-back')return 9;
+            if(viewId==='inside-back')return 9;
             if(viewId==='back-cover')return 10;
             const pageNumber=pageNumberForId(viewId);
             if(pageNumber===1)return 1;
@@ -211,13 +224,10 @@
             target.replaceChildren();
             target.removeAttribute('data-face');
             if(pageNumber===16){
-                const heading=document.createElement('h2');
-                const copy=document.createElement('p');
-                heading.textContent='Colophon';
-                copy.textContent='A quiet endpaper for your eBook journey.';
-                target.append(heading,copy);
+                target.classList.add('is-blank');
                 return;
             }
+            target.classList.remove('is-blank');
             const template=templateForPage(pageNumber);
             if(template){
                 target.append(template.content.cloneNode(true));
@@ -242,7 +252,7 @@
         const pagesForDesktopState=state=>{
             if(state===1)return {left:0,right:1};
             if(state>=2&&state<=8)return {left:state*2-2,right:state*2-1};
-            if(state===9)return {left:16,right:0};
+            if(state===9)return {left:0,right:0};
             return {left:0,right:0};
         };
         const personalizeWithin=root=>{

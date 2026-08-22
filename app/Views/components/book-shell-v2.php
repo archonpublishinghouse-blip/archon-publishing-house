@@ -1,8 +1,17 @@
-<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260823-mobile1">
+<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260823-mobile2">
 
 <?php require __DIR__ . '/book-welcome.php'; ?>
 
 <main class="preview" data-preview data-state="0" aria-label="Archon Publishing House interactive book">
+    <section class="book-splash" data-book-splash aria-label="Archon Publishing House introduction">
+        <div class="book-splash__mark" aria-hidden="true"></div>
+        <div class="book-splash__copy">
+            <p>ARCHON</p>
+            <h1>Archon Publishing House</h1>
+            <span>From your idea to a professionally written eBook</span>
+        </div>
+    </section>
+
     <section class="book-intro" data-book-intro aria-labelledby="book-intro-title">
         <div class="book-intro__book" aria-hidden="true">
             <div class="book-intro__page book-intro__page--left"></div>
@@ -144,4 +153,4 @@
     </noscript>
 </main>
 
-<script src="/assets/js/book-preview.js?v=20260822-voices-form1" defer></script>
+<script src="/assets/js/book-preview.js?v=20260823-mobile2" defer></script>
