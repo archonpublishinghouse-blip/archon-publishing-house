@@ -23,6 +23,7 @@ $description = $isQuote ? $lead['description'] : $lead['message'];
                 <dl class="crm-fields">
                     <dt>Email</dt><dd><a href="mailto:<?=Security::e($lead['email'])?>"><?=Security::e($lead['email'])?></a></dd>
                     <?php if (!empty($lead['phone'])): ?><dt>Phone / WhatsApp</dt><dd><?=Security::e($lead['phone'])?></dd><?php endif; ?>
+                    <dt>Assigned to</dt><dd><?=Security::e($lead['assigned_name'] ?: 'Unassigned')?></dd>
                     <dt>Received</dt><dd><?=Security::e(date('M j, Y g:ia', strtotime($lead['created_at'])))?></dd>
                     <?php if ($isQuote): ?>
                         <?php if (!empty($lead['service_title'])): ?><dt>Service</dt><dd><?=Security::e($lead['service_title'])?></dd><?php endif; ?>
@@ -43,6 +44,23 @@ $description = $isQuote ? $lead['description'] : $lead['message'];
                 <?php endif; ?>
             </section>
             <aside class="crm-side">
+                <?php if ($canManageAll): ?>
+                    <section class="panel">
+                        <h2>Assign lead</h2>
+                        <form method="post" action="/admin/leads/<?=Security::e($kind)?>/<?=$lead['id']?>/assign">
+                            <input type="hidden" name="_token" value="<?=Security::csrf()?>">
+                            <label>Owner
+                                <select name="assigned_admin_id">
+                                    <option value="0">Unassigned</option>
+                                    <?php foreach ($employees as $employee): ?>
+                                        <option value="<?=$employee['id']?>" <?=((int)($lead['assigned_admin_id'] ?? 0) === (int)$employee['id']) ? 'selected' : ''?>><?=Security::e($employee['name'])?><?=($employee['role'] ?? '') === 'employee' ? ' · Team member' : ' · CRM admin'?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                            <button class="button">Assign lead</button>
+                        </form>
+                    </section>
+                <?php endif; ?>
                 <section class="panel">
                     <h2>Update status</h2>
                     <form method="post" action="/admin/leads/<?=Security::e($kind)?>/<?=$lead['id']?>/status">
@@ -71,16 +89,17 @@ $description = $isQuote ? $lead['description'] : $lead['message'];
             <div class="crm-heading">
                 <div>
                     <p class="eyebrow">TIMELINE</p>
-                    <h2>Internal notes</h2>
+                    <h2>Lead history</h2>
                 </div>
             </div>
             <?php foreach ($notes as $note): ?>
                 <article>
+                    <span class="crm-timeline__action"><?=Security::e(ucwords(str_replace('_', ' ', $note['action'] ?? 'note')))?></span>
                     <p><?=nl2br(Security::e($note['body']))?></p>
-                    <small><?=Security::e($note['admin_name'] ?: 'Admin')?> · <?=Security::e(date('M j, Y g:ia', strtotime($note['created_at'])))?></small>
+                    <small><?=Security::e($note['admin_name'] ?: 'System')?> · <?=Security::e(date('M j, Y g:ia', strtotime($note['created_at'])))?></small>
                 </article>
             <?php endforeach; ?>
-            <?php if (!$notes): ?><p>No internal notes yet.</p><?php endif; ?>
+            <?php if (!$notes): ?><p>No lead activity yet.</p><?php endif; ?>
         </section>
     </main>
 </section>

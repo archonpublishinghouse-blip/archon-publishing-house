@@ -36,9 +36,55 @@ final class SiteController extends Controller {
     public function blog(): never { try{$posts=$this->all("SELECT * FROM blog_posts WHERE status='published' ORDER BY published_at DESC");}catch(\Throwable){$posts=DemoContent::posts();} $this->render('site/blog',compact('posts')); }
     public function article(string $slug): never { try{$post=$this->one("SELECT * FROM blog_posts WHERE slug=? AND status='published'",[$slug]);}catch(\Throwable){$post=null;foreach(DemoContent::posts() as $item)if($item['slug']===$slug)$post=$item;}if(!$post)$this->render('errors/404',[],404);$this->render('site/article',compact('post')); }
     public function contact(): never { $this->render('site/contact'); }
-    public function sendContact(): never { $this->requirePost(); if(!Security::rateLimit('contact',4,3600)){Security::flash('error','Please wait before sending another message.');Security::redirect('/contact');} $name=trim($_POST['name']??'');$email=filter_var($_POST['email']??'',FILTER_VALIDATE_EMAIL);$message=trim($_POST['message']??'');if(!$name||!$email||strlen($message)<10||empty($_POST['consent'])){Security::flash('error','Please complete the required fields and consent.');Security::redirect('/contact');}$this->db()->prepare('INSERT INTO contact_messages (name,email,phone,subject,message,status) VALUES (?,?,?,?,?,\'new\')')->execute([$name,$email,trim($_POST['phone']??''),trim($_POST['subject']??''),$message]);MailService::send($email,'We received your message','Thank you for contacting Archon Publishing House. We will reply as soon as we can.');Security::flash('success','Thank you. Your message has been received.');Security::redirect('/contact'); }
+    public function sendContact(): never {
+        $this->requirePost();
+        if(!Security::rateLimit('contact',4,3600)){
+            $this->formFailure('/contact','Please wait before sending another message.');
+        }
+        $name=trim($_POST['name']??'');
+        $email=filter_var($_POST['email']??'',FILTER_VALIDATE_EMAIL);
+        $message=trim($_POST['message']??'');
+        if(!$name||!$email||strlen($message)<10||empty($_POST['consent'])){
+            $this->formFailure('/contact','Please complete the required fields and consent.');
+        }
+        $this->db()->prepare('INSERT INTO contact_messages (name,email,phone,subject,message,status) VALUES (?,?,?,?,?,\'new\')')->execute([$name,$email,trim($_POST['phone']??''),trim($_POST['subject']??''),$message]);
+        MailService::send($email,'We received your message','Thank you for contacting Archon Publishing House. We will reply as soon as we can.');
+        $this->formSuccess('/contact','Thank you. Your message has been received.');
+    }
     public function quote(): never { try{$services=$this->all('SELECT id,title FROM services WHERE is_active=1 ORDER BY display_order');}catch(\Throwable){$services=array_map(fn($service)=>['id'=>$service['id'],'title'=>$service['title']],DemoContent::services());}$this->render('site/quote',compact('services')); }
-    public function sendQuote(): never { $this->requirePost();if(!Security::rateLimit('quote',3,3600)){Security::flash('error','Please wait before submitting another request.');Security::redirect('/quote');}$name=trim($_POST['name']??'');$email=filter_var($_POST['email']??'',FILTER_VALIDATE_EMAIL);$description=trim($_POST['description']??'');if(!$name||!$email||strlen($description)<20||empty($_POST['consent'])){Security::flash('error','Please complete the form, including consent.');Security::redirect('/quote');}$pdo=$this->db();$pdo->prepare('INSERT INTO quote_requests (name,email,phone,service_id,book_title,genre,word_count,project_stage,completion_date,budget_range,description,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,\'new\')')->execute([$name,$email,trim($_POST['phone']??''),($_POST['service_id']?:null),trim($_POST['book_title']??''),trim($_POST['genre']??''),trim($_POST['word_count']??''),trim($_POST['project_stage']??''),($_POST['completion_date']?:null),trim($_POST['budget_range']??''),$description]);$quoteId=(int)$pdo->lastInsertId();$file=$_FILES['attachment']??null;if($file&&$file['error']!==UPLOAD_ERR_NO_FILE){$allowed=['application/pdf'=>'pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document'=>'docx','application/msword'=>'doc'];$max=(int)(\App\Core\Env::get('MAX_QUOTE_ATTACHMENT_MB','10'))*1024*1024;$mime=(new \finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);$extension=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION));if($file['error']!==UPLOAD_ERR_OK||$file['size']>$max||!isset($allowed[$mime])||$allowed[$mime]!==$extension){Security::flash('error','Attachment must be a PDF, DOC or DOCX under the configured size limit.');Security::redirect('/quote');}$stored=bin2hex(random_bytes(20)).'.'.$extension;$target=dirname(__DIR__,2).'/private/quote-attachments/'.$stored;if(!move_uploaded_file($file['tmp_name'],$target)){Security::flash('error','We could not safely store that attachment. Please try again.');Security::redirect('/quote');}$pdo->prepare('INSERT INTO quote_attachments(quote_request_id,storage_name,original_name,mime_type,file_size) VALUES(?,?,?,?,?)')->execute([$quoteId,$stored,basename($file['name']),$mime,$file['size']]);}MailService::send($email,'Your Archon consultation request','Thank you for sharing your project. Our editorial team will review it and be in touch.');Security::flash('success','Your consultation request is in our editorial inbox.');Security::redirect('/quote'); }
+    public function sendQuote(): never {
+        $this->requirePost();
+        if(!Security::rateLimit('quote',3,3600)){
+            $this->formFailure('/quote','Please wait before submitting another request.');
+        }
+        $name=trim($_POST['name']??'');
+        $email=filter_var($_POST['email']??'',FILTER_VALIDATE_EMAIL);
+        $description=trim($_POST['description']??'');
+        if(!$name||!$email||strlen($description)<20||empty($_POST['consent'])){
+            $this->formFailure('/quote','Please complete the form, including consent.');
+        }
+        $pdo=$this->db();
+        $pdo->prepare('INSERT INTO quote_requests (name,email,phone,service_id,book_title,genre,word_count,project_stage,completion_date,budget_range,description,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,\'new\')')->execute([$name,$email,trim($_POST['phone']??''),($_POST['service_id']?:null),trim($_POST['book_title']??''),trim($_POST['genre']??''),trim($_POST['word_count']??''),trim($_POST['project_stage']??''),($_POST['completion_date']?:null),trim($_POST['budget_range']??''),$description]);
+        $quoteId=(int)$pdo->lastInsertId();
+        $file=$_FILES['attachment']??null;
+        if($file&&$file['error']!==UPLOAD_ERR_NO_FILE){
+            $allowed=['application/pdf'=>'pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document'=>'docx','application/msword'=>'doc'];
+            $max=(int)(\App\Core\Env::get('MAX_QUOTE_ATTACHMENT_MB','10'))*1024*1024;
+            $mime=(new \finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+            $extension=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION));
+            if($file['error']!==UPLOAD_ERR_OK||$file['size']>$max||!isset($allowed[$mime])||$allowed[$mime]!==$extension){
+                $this->formFailure('/quote','Attachment must be a PDF, DOC or DOCX under the configured size limit.');
+            }
+            $stored=bin2hex(random_bytes(20)).'.'.$extension;
+            $target=dirname(__DIR__,2).'/private/quote-attachments/'.$stored;
+            if(!move_uploaded_file($file['tmp_name'],$target)){
+                $this->formFailure('/quote','We could not safely store that attachment. Please try again.');
+            }
+            $pdo->prepare('INSERT INTO quote_attachments(quote_request_id,storage_name,original_name,mime_type,file_size) VALUES(?,?,?,?,?)')->execute([$quoteId,$stored,basename($file['name']),$mime,$file['size']]);
+        }
+        MailService::send($email,'Your Archon consultation request','Thank you for sharing your project. Our editorial team will review it and be in touch.');
+        $this->formSuccess('/quote','Your consultation request is in our editorial inbox.');
+    }
     public function newsletter(): never { $this->requirePost();if(!Security::rateLimit('newsletter',4,3600)){Security::flash('error','Please wait before trying again.');Security::redirect('/');}$email=filter_var($_POST['email']??'',FILTER_VALIDATE_EMAIL);if(!$email||empty($_POST['consent'])){Security::flash('error','Enter a valid email and confirm consent.');Security::redirect('/');}$token=bin2hex(random_bytes(24));$this->db()->prepare("INSERT INTO newsletter_subscribers (email,unsubscribe_token,status,consented_at) VALUES (?,?, 'active', NOW()) ON DUPLICATE KEY UPDATE status='active', consented_at=NOW()")->execute([$email,$token]);$subscriber=$this->one('SELECT unsubscribe_token FROM newsletter_subscribers WHERE email=?',[$email]);MailService::send($email,'Welcome to the Archon Letter','Thank you for subscribing. Manage your subscription here: /unsubscribe?token='.($subscriber['unsubscribe_token']??''));Security::flash('success','You are subscribed to Archon notes.');Security::redirect('/'); }
     public function unsubscribe(): never {$token=trim($_GET['token']??'');if(!preg_match('/^[a-f0-9]{48}$/',$token))$this->render('errors/404',[],404);$statement=$this->db()->prepare("UPDATE newsletter_subscribers SET status='unsubscribed' WHERE unsubscribe_token=?");$statement->execute([$token]);$this->render('site/unsubscribe',['success'=>$statement->rowCount()>0]);}
     private function bookJourneyData(): array {
@@ -53,8 +99,8 @@ final class SiteController extends Controller {
 
         if ($this->dbAvailable()) {
             $data['services'] = $this->all('SELECT * FROM services WHERE is_active=1 ORDER BY display_order LIMIT 8');
-            $data['authors'] = $this->all('SELECT * FROM authors WHERE is_active=1 ORDER BY is_featured DESC LIMIT 4');
-            $data['testimonials'] = $this->all('SELECT * FROM testimonials WHERE is_active=1 LIMIT 4');
+            $data['authors'] = $this->all('SELECT * FROM authors WHERE is_active=1 ORDER BY is_featured DESC, name LIMIT 6');
+            $data['testimonials'] = $this->all('SELECT * FROM testimonials WHERE is_active=1 ORDER BY display_order, id LIMIT 6');
         } else {
             $data['services'] = DemoContent::services();
             $data['authors'] = DemoContent::authors();
@@ -62,6 +108,30 @@ final class SiteController extends Controller {
         }
 
         return $data;
+    }
+
+    private function wantsJson(): bool {
+        return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest'
+            || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
+    }
+
+    private function formFailure(string $redirect, string $message): never {
+        if($this->wantsJson())$this->json(['ok'=>false,'message'=>$message],422);
+        Security::flash('error',$message);
+        Security::redirect($redirect);
+    }
+
+    private function formSuccess(string $redirect, string $message): never {
+        if($this->wantsJson())$this->json(['ok'=>true,'message'=>$message]);
+        Security::flash('success',$message);
+        Security::redirect($redirect);
+    }
+
+    private function json(array $payload, int $status=200): never {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode($payload,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+        exit;
     }
 
     private function dbAvailable(): bool { try{$this->db();return true;}catch(\Throwable){return false;} }

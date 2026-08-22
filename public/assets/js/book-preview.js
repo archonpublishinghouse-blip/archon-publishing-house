@@ -32,6 +32,10 @@
         const error=document.querySelector('[data-book-name-error]');
         const dialogTitle=document.querySelector('[data-book-welcome-title]');
         const dialogMessage=document.querySelector('[data-book-welcome-message]');
+        const intro=book.querySelector('[data-book-intro]');
+        const introStart=book.querySelector('[data-book-intro-start]');
+        const bookmarkDialog=book.querySelector('[data-bookmark-dialog]');
+        const bookmarkPanels=bookmarkDialog?[...bookmarkDialog.querySelectorAll('[data-bookmark-panel]')]:[];
         const mobileMedia=matchMedia('(max-width: 800px)');
 
         if(!stage||sheets.length<10||!previous||!next||!reset||!progress)return;
@@ -151,8 +155,11 @@
         let pendingModeSync=false;
         let visitorName=readName();
         let ready=Boolean(visitorName);
+        let introActive=Boolean(intro);
+        let startRevealActive=false;
         let dialogMode='none';
         let dialogOpener=null;
+        let bookmarkOpener=null;
         let closingDialogProgrammatically=false;
         let touchStart=null;
 
@@ -329,7 +336,7 @@
             settledLayer.setAttribute('aria-hidden','true');
             settledLayer.inert=true;
 
-            if(!ready||isAnimating||dialogIsOpen())return;
+            if(!ready||isAnimating||dialogIsOpen()||bookmarkIsOpen())return;
 
             if(mode==='mobile'){
                 settledLayer.setAttribute('aria-hidden','false');
@@ -356,10 +363,98 @@
             }
         };
         const dialogIsOpen=()=>Boolean(dialog&&(dialog.open||dialog.hasAttribute('open')));
+        const bookmarkIsOpen=()=>Boolean(bookmarkDialog&&(bookmarkDialog.open||bookmarkDialog.hasAttribute('open')));
+        const clampNumber=(value,min,max)=>Math.min(Math.max(value,min),max);
+        const placeBookmarkOnPage=sourceElement=>{
+            if(!bookmarkDialog)return;
+            const openerPage=sourceElement?.closest?.('.preview-settled-page,.preview-face')||bookmarkOpener?.closest?.('.preview-settled-page,.preview-face');
+            let page=openerPage&&openerPage.getBoundingClientRect().width>0?openerPage:null;
+            if(!page){
+                page=mode==='mobile'?settledRight:(currentState===9?settledLeft:settledRight);
+            }
+            const rect=page.getBoundingClientRect();
+            const stageRect=stage.getBoundingClientRect();
+            const usableRect=(rect.width>0&&rect.height>0)?rect:stageRect;
+            const viewportWidth=document.documentElement.clientWidth||window.innerWidth;
+            const viewportHeight=document.documentElement.clientHeight||window.innerHeight;
+            const targetWidth=clampNumber(usableRect.width*.54,240,350);
+            const isRightPage=page.classList?.contains('is-right')||usableRect.left>=stageRect.left+stageRect.width*.5;
+            const sideInset=clampNumber(usableRect.width*.045,10,24);
+            const pageSideLeft=isRightPage
+                ? usableRect.left+targetWidth*.5+sideInset
+                : usableRect.right-targetWidth*.5-sideInset;
+            const left=clampNumber(pageSideLeft,targetWidth*.5+8,viewportWidth-targetWidth*.5-8);
+            const top=clampNumber(usableRect.top,8,Math.max(8,viewportHeight-usableRect.height*.72));
+            const maxHeight=clampNumber(usableRect.height*.9,360,Math.max(360,viewportHeight-24));
+            const dropDistance=Math.max(top+targetWidth,viewportHeight*.58);
+            bookmarkDialog.style.setProperty('--bookmark-left',`${left}px`);
+            bookmarkDialog.style.setProperty('--bookmark-top',`${top}px`);
+            bookmarkDialog.style.setProperty('--bookmark-width',`${targetWidth}px`);
+            bookmarkDialog.style.setProperty('--bookmark-max-height',`${maxHeight}px`);
+            bookmarkDialog.style.setProperty('--bookmark-drop-distance',`${dropDistance}px`);
+        };
+        const openBookmark=(formName,sourceElement=null)=>{
+            if(!bookmarkDialog)return;
+            bookmarkOpener=sourceElement||document.activeElement;
+            const targetName=formName==='contact'?'contact':'quote';
+            placeBookmarkOnPage(sourceElement);
+            bookmarkPanels.forEach(panel=>{
+                const visible=panel.dataset.bookmarkPanel===targetName;
+                panel.hidden=!visible;
+                panel.setAttribute('aria-hidden',visible?'false':'true');
+                if(visible){
+                    const status=panel.querySelector('[data-bookmark-status]');
+                    if(status){
+                        status.textContent='';
+                        status.dataset.state='';
+                    }
+                    panel.style.animation='none';
+                    void panel.offsetWidth;
+                    panel.style.animation='';
+                }
+            });
+            bookmarkDialog.setAttribute('aria-labelledby',targetName==='contact'?'book-bookmark-contact-title':'book-bookmark-title');
+            if(bookmarkDialog.showModal&&!bookmarkDialog.open)bookmarkDialog.showModal();
+            else bookmarkDialog.setAttribute('open','');
+            draw();
+            setTimeout(()=>{
+                const first=bookmarkDialog.querySelector(`[data-bookmark-panel="${targetName}"] input, [data-bookmark-panel="${targetName}"] textarea, [data-bookmark-panel="${targetName}"] select, [data-bookmark-panel="${targetName}"] button`);
+                first?.focus();
+            },0);
+        };
+        const closeBookmark=()=>{
+            if(!bookmarkDialog)return;
+            if(bookmarkDialog.open&&bookmarkDialog.close)bookmarkDialog.close();
+            else bookmarkDialog.removeAttribute('open');
+            draw();
+            const opener=bookmarkOpener;
+            bookmarkOpener=null;
+            if(opener&&opener.isConnected)setTimeout(()=>opener.focus(),0);
+        };
+        const finishStartReveal=()=>{
+            startRevealActive=false;
+            book.classList.remove('is-starting');
+            book.classList.add('has-started');
+            draw();
+        };
+        const playStartReveal=()=>{
+            introActive=false;
+            intro?.classList.add('is-dismissed');
+            if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+                finishStartReveal();
+                return;
+            }
+            startRevealActive=true;
+            book.classList.remove('has-started');
+            book.classList.add('is-starting');
+            draw();
+            window.setTimeout(finishStartReveal,1300);
+        };
         const draw=()=>{
-            const interactionBlocked=!ready||isAnimating||dialogIsOpen();
+            const interactionBlocked=!ready||introActive||startRevealActive||isAnimating||dialogIsOpen()||bookmarkIsOpen();
             book.dataset.state=String(visualStateFor(currentState,activeViewId));
             book.dataset.readerMode=mode;
+            book.dataset.intro= introActive?'active':'done';
             previous.disabled=interactionBlocked||currentState===0;
             next.disabled=interactionBlocked||currentState===maxState(mode);
             reset.disabled=interactionBlocked||currentState===0;
@@ -371,7 +466,7 @@
                 if(link.dataset.bookPage===activeViewId)link.setAttribute('aria-current','page');
                 else link.removeAttribute('aria-current');
             });
-            book.inert=!ready||dialogIsOpen();
+            book.inert=(!ready&&!introActive)||dialogIsOpen();
             updateAccessibility();
         };
 
@@ -707,13 +802,15 @@
 
         form?.addEventListener('submit',event=>{
             event.preventDefault();
+            const firstVisitDialog=dialogMode==='first';
             if(event.submitter?.matches('[data-book-guest]')){
                 visitorName='';
                 removeName();
                 ready=true;
                 personalize();
                 hideDialog();
-                draw();
+                if(firstVisitDialog)playStartReveal();
+                else draw();
                 return;
             }
             const value=clean(input?.value);
@@ -727,7 +824,8 @@
             ready=true;
             personalize();
             hideDialog();
-            draw();
+            if(firstVisitDialog)playStartReveal();
+            else draw();
         });
         dialog?.addEventListener('cancel',event=>{
             event.preventDefault();
@@ -763,9 +861,86 @@
                 first.focus();
             }
         });
+        bookmarkDialog?.addEventListener('cancel',event=>{
+            event.preventDefault();
+            closeBookmark();
+        });
+        bookmarkDialog?.addEventListener('close',()=>{
+            draw();
+        });
+        bookmarkDialog?.addEventListener('keydown',event=>{
+            if(event.key!=='Tab')return;
+            const focusable=[...bookmarkDialog.querySelectorAll(focusableSelector)].filter(element=>!element.disabled&&!element.closest('[hidden]'));
+            if(!focusable.length)return;
+            const first=focusable[0];
+            const last=focusable[focusable.length-1];
+            if(event.shiftKey&&document.activeElement===first){
+                event.preventDefault();
+                last.focus();
+            }else if(!event.shiftKey&&document.activeElement===last){
+                event.preventDefault();
+                first.focus();
+            }
+        });
+        bookmarkDialog?.querySelector('.book-bookmark__close')?.addEventListener('submit',event=>{
+            event.preventDefault();
+            closeBookmark();
+        });
+        bookmarkDialog?.querySelectorAll('form[data-bookmark-ajax]').forEach(bookmarkForm=>{
+            bookmarkForm.addEventListener('submit',async event=>{
+                event.preventDefault();
+                if(!bookmarkForm.reportValidity())return;
+                const status=bookmarkForm.querySelector('[data-bookmark-status]');
+                const submit=bookmarkForm.querySelector('[type="submit"]');
+                const originalSubmitText=submit?.textContent||'Submit';
+                const setStatus=(message,state='')=>{
+                    if(!status)return;
+                    status.textContent=message;
+                    status.dataset.state=state;
+                };
+                setStatus('Sending your details...', 'pending');
+                if(submit){
+                    submit.disabled=true;
+                    submit.textContent='Sending...';
+                }
+                try{
+                    const response=await fetch(bookmarkForm.action,{
+                        method:'POST',
+                        body:new FormData(bookmarkForm),
+                        headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}
+                    });
+                    let payload=null;
+                    try{payload=await response.json();}catch{}
+                    const message=payload?.message||(response.ok?'Thank you. Your request has been received.':'Something went wrong. Please check the form and try again.');
+                    if(!response.ok||payload?.ok===false){
+                        setStatus(message,'error');
+                        return;
+                    }
+                    bookmarkForm.reset();
+                    setStatus(message,'success');
+                }catch{
+                    setStatus('We could not send this from the book right now. Please try again in a moment.','error');
+                }finally{
+                    if(submit){
+                        submit.disabled=false;
+                        submit.textContent=originalSubmitText;
+                    }
+                    draw();
+                }
+            });
+        });
 
         previous.addEventListener('click',()=>move(-1));
         next.addEventListener('click',()=>move(1));
+        introStart?.addEventListener('click',()=>{
+            if(!introActive||startRevealActive)return;
+            if(ready)playStartReveal();
+            else{
+                introActive=false;
+                intro?.classList.add('is-dismissed');
+                showDialog(false);
+            }
+        });
         reset.addEventListener('click',()=>{
             if(isAnimating||!ready)return;
             forceView('cover','push');
@@ -785,6 +960,14 @@
         });
         book.addEventListener('click',event=>{
             const origin=event.target instanceof Element?event.target:null;
+            const bookmarkLink=origin?.closest('[data-bookmark-form]');
+            if(bookmarkLink&&settledLayer.contains(bookmarkLink)&&!event.defaultPrevented){
+                if(event.button>0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+                if(isAnimating||!ready)return;
+                event.preventDefault();
+                openBookmark(bookmarkLink.dataset.bookmarkForm,bookmarkLink);
+                return;
+            }
             const link=origin?.closest('a[data-book-page]');
             if(!link||!settledLayer.contains(link)||event.defaultPrevented)return;
             if(event.button>0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
@@ -794,7 +977,7 @@
             jumpToView(viewId,'push');
         });
         document.addEventListener('keydown',event=>{
-            if(event.defaultPrevented||dialogIsOpen())return;
+            if(event.defaultPrevented||dialogIsOpen()||bookmarkIsOpen())return;
             const target=event.target;
             if(target instanceof Element&&target.closest('input,textarea,select,[contenteditable="true"],[role="textbox"]'))return;
             if(event.key==='ArrowRight'){
@@ -807,14 +990,14 @@
             }
         });
         stage.addEventListener('touchstart',event=>{
-            if(mode!=='mobile'||isAnimating||dialogIsOpen())return;
+            if(mode!=='mobile'||isAnimating||dialogIsOpen()||bookmarkIsOpen())return;
             const origin=event.target instanceof Element?event.target:null;
             if(origin?.closest('a,button,input,textarea,select,[contenteditable="true"]'))return;
             const touch=event.changedTouches[0];
             touchStart=touch?{x:touch.clientX,y:touch.clientY}:null;
         },{passive:true});
         stage.addEventListener('touchend',event=>{
-            if(mode!=='mobile'||!touchStart||isAnimating||dialogIsOpen())return;
+            if(mode!=='mobile'||!touchStart||isAnimating||dialogIsOpen()||bookmarkIsOpen())return;
             const endX=event.changedTouches[0]?.clientX||0;
             const endY=event.changedTouches[0]?.clientY||0;
             const distanceX=endX-touchStart.x;
@@ -838,6 +1021,6 @@
         settleVisualImmediately(currentState,activeViewId);
         draw();
         writeHistory(activeViewId,'replace');
-        if(!ready)showDialog(false);
+        if(!introActive&&!ready)showDialog(false);
     });
 })();

@@ -4,6 +4,7 @@ use App\Core\Security;
 use App\Services\MailService;
 use App\Services\CartService;
 use App\Services\RememberService;
+use App\Services\CrmSchemaService;
 
 final class AuthController extends Controller {
     public function adminLoginForm(): never {
@@ -12,6 +13,7 @@ final class AuthController extends Controller {
     }
     public function adminLogin(): never {
         $this->requirePost();
+        CrmSchemaService::ensure($this->db());
         if (!Security::rateLimit('admin-login', 5, 900)) {
             Security::flash('error', 'Too many login attempts. Please try again later.');
             Security::redirect('/admin/login');
@@ -24,7 +26,7 @@ final class AuthController extends Controller {
             Security::redirect('/admin/login');
         }
         session_regenerate_id(true);
-        $_SESSION['admin']=['id'=>$admin['id'],'name'=>$admin['name'],'email'=>$admin['email'],'role'=>'super_admin'];
+        $_SESSION['admin']=['id'=>$admin['id'],'name'=>$admin['name'],'email'=>$admin['email'],'role'=>$admin['role'] ?: 'admin'];
         $this->db()->prepare('UPDATE admins SET last_login_at=NOW() WHERE id=?')->execute([$admin['id']]);
         Security::flash('success','Admin session started.');
         Security::redirect('/admin');

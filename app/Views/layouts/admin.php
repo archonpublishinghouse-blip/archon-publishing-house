@@ -15,7 +15,7 @@ $flashError = Security::flash('error');
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/main.css?v=20260821-crm1">
     <style>
         .admin-session-logout{position:fixed;z-index:30;top:1rem;right:1rem;margin:0}
     </style>

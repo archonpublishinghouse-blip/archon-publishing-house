@@ -9,6 +9,7 @@
 *.log
 /storage/logs/*
 !/storage/logs/.gitkeep
+/storage/tmp-three/
 /private/books/*
 !/private/books/.gitkeep
 /private/samples/*

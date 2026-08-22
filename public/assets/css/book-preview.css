@@ -26,6 +26,10 @@
 .preview {
     position: relative;
     isolation: isolate;
+    --scene-x: 0;
+    --scene-y: 0;
+    --scene-light-x: 50%;
+    --scene-light-y: 38%;
     width: 100%;
     height: 100dvh;
     overflow: hidden;
@@ -39,9 +43,196 @@
         max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
     background-color: #08282b;
     background-image:
+        radial-gradient(circle at var(--scene-light-x) var(--scene-light-y), rgba(221, 199, 143, .2), transparent 18%),
         radial-gradient(ellipse at 50% 35%, rgba(47, 105, 105, .78) 0, rgba(13, 62, 66, .56) 30%, rgba(6, 26, 28, .92) 72%),
         linear-gradient(180deg, #0b3437 0, #061a1c 100%);
     color: var(--preview-ink);
+}
+
+.preview > .archon-webgl-scene {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: .95;
+}
+
+.preview > .archon-webgl-scene canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.book-intro {
+    position: absolute;
+    z-index: 520;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+        max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+    overflow: hidden;
+    color: #f6e4ac;
+    background:
+        radial-gradient(circle at 50% 28%, rgba(221, 199, 143, .2), transparent 23%),
+        radial-gradient(ellipse at center, rgba(13, 62, 66, .93), rgba(3, 16, 17, .98) 72%);
+    transition: opacity .55s ease, visibility .55s ease;
+}
+
+.book-intro.is-dismissed {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.book-intro__book {
+    position: absolute;
+    width: min(86vw, 980px);
+    height: min(68dvh, 620px);
+    perspective: 1800px;
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 2.2rem 2rem rgba(0, 0, 0, .38));
+    animation: introOpenBook 1.15s cubic-bezier(.2, .72, .16, 1) both;
+}
+
+.book-intro__page {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    border: 1px solid rgba(221, 199, 143, .5);
+    background:
+        radial-gradient(rgba(91, 69, 28, .12) .55px, transparent .75px),
+        linear-gradient(90deg, rgba(133, 94, 36, .16), transparent 18%, transparent 82%, rgba(133, 94, 36, .12)),
+        var(--preview-paper);
+    background-size: 7px 7px, 100% 100%, 100% 100%;
+    box-shadow: inset 0 0 3.2rem rgba(91, 69, 28, .18);
+}
+
+.book-intro__page--left {
+    right: 50%;
+    border-radius: .45rem 0 0 .45rem;
+    transform-origin: right center;
+    transform: rotateY(7deg);
+}
+
+.book-intro__page--right {
+    left: 50%;
+    border-radius: 0 .45rem .45rem 0;
+    transform-origin: left center;
+    transform: rotateY(-7deg);
+}
+
+.book-intro__spine {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1.25rem;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, rgba(71, 45, 13, .34), rgba(255, 250, 221, .55), rgba(71, 45, 13, .34));
+    box-shadow: 0 0 1.6rem rgba(67, 44, 11, .28);
+}
+
+.book-intro__copy {
+    position: relative;
+    z-index: 3;
+    max-width: min(86vw, 760px);
+    text-align: center;
+    text-shadow: 0 .22rem .65rem rgba(0, 0, 0, .42);
+    animation: introCopyArrive .85s ease .32s both;
+}
+
+.book-intro .book-kicker {
+    margin-bottom: 1rem;
+    color: var(--preview-brass-light);
+    font: 700 .72rem/1 Inter, Arial, sans-serif;
+    letter-spacing: .26em;
+}
+
+.book-intro h1 {
+    max-width: 10ch;
+    margin: 0 auto .85rem;
+    color: #f6e4ac;
+    font: 600 clamp(3.5rem, 9vw, 7.4rem)/.82 "Cormorant Garamond", Georgia, serif;
+    text-transform: uppercase;
+}
+
+.book-intro p:not(.book-kicker) {
+    max-width: 36rem;
+    margin: 0 auto 1.65rem;
+    color: #f5e9c5;
+    font: 500 clamp(1rem, 2vw, 1.25rem)/1.55 "Cormorant Garamond", Georgia, serif;
+}
+
+.book-intro__button {
+    min-height: 48px;
+    padding: .85rem 1.35rem;
+    border: 1px solid rgba(246, 228, 172, .75);
+    background: rgba(13, 62, 66, .82);
+    color: #f6e4ac;
+    font: 700 .72rem/1 Inter, Arial, sans-serif;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    box-shadow: 0 .8rem 1.5rem rgba(0, 0, 0, .28);
+}
+
+.book-intro__button:hover,
+.book-intro__button:focus-visible {
+    background: rgba(29, 83, 86, .95);
+    transform: translateY(-1px);
+}
+
+.preview:not(.has-started) .preview-side-navigation,
+.preview:not(.has-started) .preview-controls {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.preview.is-starting .preview-reader {
+    animation: previewReaderStart 1.25s cubic-bezier(.18, .76, .2, 1) both;
+}
+
+@keyframes introOpenBook {
+    from {
+        opacity: 0;
+        transform: perspective(1600px) translateY(2rem) rotateX(10deg) scale(.88);
+    }
+    to {
+        opacity: 1;
+        transform: perspective(1600px) translateY(0) rotateX(0deg) scale(1);
+    }
+}
+
+@keyframes introCopyArrive {
+    from {
+        opacity: 0;
+        transform: translateY(1rem) scale(.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes previewReaderStart {
+    0% {
+        opacity: .22;
+        transform: perspective(1500px) translate3d(0, 0, 11rem) rotateX(10deg) rotateY(-28deg) scale(1.16);
+        filter: blur(1px) drop-shadow(0 2rem 1.8rem rgba(0, 0, 0, .4));
+    }
+    58% {
+        opacity: 1;
+        transform: perspective(1500px) translate3d(0, -1rem, -6rem) rotateX(4deg) rotateY(378deg) scale(.86);
+        filter: blur(0) drop-shadow(0 2.4rem 2rem rgba(0, 0, 0, .34));
+    }
+    100% {
+        opacity: 1;
+        transform: perspective(1800px) rotateX(calc(var(--scene-y) * -1.4deg)) rotateY(calc(var(--scene-x) * 1.8deg));
+        filter: none;
+    }
 }
 
 .preview::before {
@@ -76,7 +267,7 @@
 
 .preview-reader {
     position: relative;
-    z-index: 1;
+    z-index: 3;
     display: grid;
     width: calc(var(--pp) * 2);
     min-width: 0;
@@ -84,6 +275,8 @@
     overflow: visible;
     justify-self: center;
     place-items: center;
+    transform: perspective(1800px) rotateX(calc(var(--scene-y) * -1.4deg)) rotateY(calc(var(--scene-x) * 1.8deg));
+    transition: transform .18s ease-out;
 }
 
 .preview-stage {
@@ -92,7 +285,7 @@
 
 .preview-library {
     position: relative;
-    z-index: 0;
+    z-index: 2;
     width: min(100vw, calc(var(--pp) * 2 + 28rem));
     height: 100%;
     overflow: visible;
@@ -1058,6 +1251,322 @@
     margin-top: 1rem;
 }
 
+.book-bookmark {
+    --bookmark-left: 50vw;
+    --bookmark-top: max(.35rem, calc(50dvh - var(--ph) / 2));
+    --bookmark-width: min(72vw, 350px);
+    --bookmark-max-height: min(86dvh, calc(var(--ph) * .9));
+    --bookmark-drop-distance: 110dvh;
+    position: fixed;
+    top: var(--bookmark-top);
+    left: var(--bookmark-left);
+    width: var(--bookmark-width);
+    max-width: calc(var(--pp) * .66);
+    max-height: var(--bookmark-max-height);
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    color: var(--preview-ink);
+    transform: translateX(-50%);
+    perspective: 1200px;
+}
+
+.book-bookmark::backdrop {
+    background: transparent;
+    backdrop-filter: none;
+}
+
+.book-bookmark[open]::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    top: -.9rem;
+    left: 50%;
+    width: 3.15rem;
+    height: 4.8rem;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 50% 45%, rgba(13, 62, 66, .96) 0 .25rem, rgba(246, 228, 172, .9) .26rem .34rem, transparent .35rem),
+        linear-gradient(90deg, transparent calc(50% - 1px), rgba(184, 150, 84, .95) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(105deg, transparent 43%, rgba(184, 150, 84, .86) 44% 46%, transparent 47%),
+        linear-gradient(75deg, transparent 53%, rgba(184, 150, 84, .78) 54% 56%, transparent 57%),
+        linear-gradient(92deg, transparent 48%, rgba(13, 62, 66, .76) 49% 51%, transparent 52%);
+    background-position:
+        50% 1.95rem,
+        50% 0,
+        50% 2.55rem,
+        50% 2.65rem,
+        50% 2.45rem;
+    background-size:
+        1rem 1rem,
+        100% 2.35rem,
+        100% 2.15rem,
+        100% 2.25rem,
+        100% 2.35rem;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 .18rem .16rem rgba(0, 0, 0, .22));
+    transform: translateX(-50%);
+    transform-origin: 50% 0;
+    animation: bookmarkThreadDrop 1.28s cubic-bezier(.13, .82, .18, 1) both;
+}
+
+.book-bookmark[open]::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    right: 7%;
+    bottom: .75rem;
+    left: 7%;
+    height: 2.45rem;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 43%, transparent 70%);
+    pointer-events: none;
+    animation: bookmarkLandingShadow 1.28s cubic-bezier(.13, .82, .18, 1) both;
+}
+
+.book-bookmark__panel {
+    position: relative;
+    max-height: var(--bookmark-max-height);
+    overflow: auto;
+    padding: clamp(1.18rem, 2vw, 1.5rem) clamp(.76rem, 1.7vw, 1rem) clamp(3.1rem, 5vw, 3.85rem);
+    border: 1px solid rgba(184, 150, 84, .82);
+    border-radius: .2rem .2rem 0 0;
+    background:
+        linear-gradient(90deg, rgba(92, 56, 17, .18), transparent 9%, transparent 91%, rgba(92, 56, 17, .18)),
+        linear-gradient(90deg, transparent 48.5%, rgba(132, 89, 35, .14) 49.2%, rgba(255, 251, 228, .48) 50%, rgba(132, 89, 35, .12) 50.8%, transparent 51.5%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .09) 0 1px, transparent 1px 6px),
+        radial-gradient(rgba(91, 69, 28, .12) .5px, transparent .7px),
+        radial-gradient(circle at 34% 18%, rgba(255, 249, 219, .36), transparent 23%),
+        radial-gradient(circle at 68% 78%, rgba(117, 72, 20, .14), transparent 26%),
+        var(--preview-paper);
+    background-size: 100% 100%, 100% 100%, 6px 100%, 7px 7px, 100% 100%, 100% 100%, 100% 100%;
+    box-shadow:
+        0 1.15rem 1.35rem rgba(0, 0, 0, .22),
+        .12rem .22rem 0 rgba(74, 43, 13, .14),
+        inset .16rem 0 .25rem rgba(82, 48, 12, .14),
+        inset -.16rem 0 .25rem rgba(255, 249, 220, .32),
+        inset 0 0 0 .34rem rgba(184, 150, 84, .08);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2.65rem), 50% 100%, 0 calc(100% - 2.65rem));
+    scrollbar-width: thin;
+    transform-origin: top center;
+    will-change: transform, opacity, filter;
+    animation: bookmarkDropOntoBook 1.28s cubic-bezier(.13, .82, .18, 1) both;
+}
+
+.book-bookmark__panel::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: .82rem;
+    border-bottom: 1px solid rgba(128, 91, 33, .24);
+    background:
+        radial-gradient(circle at 50% 54%, rgba(13, 62, 66, .24) 0 .12rem, transparent .13rem),
+        linear-gradient(90deg, rgba(128, 91, 33, .18), rgba(255, 247, 212, .5) 48%, rgba(128, 91, 33, .16));
+    opacity: .9;
+}
+
+.book-bookmark__panel::before {
+    content: "";
+    position: absolute;
+    inset: .95rem .68rem 2.75rem;
+    pointer-events: none;
+    border: 1px solid rgba(13, 62, 66, .16);
+    background:
+        linear-gradient(90deg, transparent 48.5%, rgba(13, 62, 66, .09) 49.5%, rgba(255, 252, 230, .3) 50.3%, transparent 51.5%),
+        linear-gradient(180deg, rgba(255, 255, 255, .2), transparent 28%, transparent 76%, rgba(94, 58, 17, .08));
+    box-shadow: inset 0 0 0 1px rgba(246, 228, 172, .18);
+}
+
+.book-bookmark__panel > * {
+    position: relative;
+}
+
+.book-bookmark h2 {
+    max-width: 9ch;
+    margin: 0 0 .78rem;
+    color: var(--preview-teal);
+    font: 600 clamp(1.78rem, 3.7vw, 2.55rem)/.92 "Cormorant Garamond", Georgia, serif;
+}
+
+.book-bookmark__form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: .48rem;
+}
+
+.book-bookmark__status {
+    min-height: 1.85rem;
+    margin: 0;
+    padding: .55rem .65rem;
+    border: 1px solid rgba(13, 62, 66, .18);
+    background: rgba(13, 62, 66, .07);
+    color: var(--preview-teal);
+    font: 700 .72rem/1.35 Inter, Arial, sans-serif;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.book-bookmark__status:empty {
+    display: none;
+}
+
+.book-bookmark__status[data-state="success"] {
+    border-color: rgba(29, 83, 86, .35);
+    background: rgba(29, 83, 86, .12);
+}
+
+.book-bookmark__status[data-state="error"] {
+    border-color: rgba(126, 47, 36, .35);
+    background: rgba(126, 47, 36, .1);
+    color: #7e2f24;
+}
+
+.book-bookmark__form label {
+    display: grid;
+    gap: .3rem;
+    margin: 0;
+    color: var(--preview-teal);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.book-bookmark__form input,
+.book-bookmark__form select,
+.book-bookmark__form textarea {
+    min-height: 36px;
+    padding: .46rem .55rem;
+    border: 1px solid rgba(13, 62, 66, .35);
+    background: rgba(255, 252, 236, .88);
+    color: var(--preview-ink);
+    font: 500 .75rem/1.3 Inter, Arial, sans-serif;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.book-bookmark__form textarea {
+    min-height: 4.7rem;
+    resize: vertical;
+}
+
+.book-bookmark__wide {
+    grid-column: 1 / -1;
+}
+
+.book-bookmark .consent {
+    display: flex;
+    align-items: flex-start;
+    gap: .55rem;
+    color: #355;
+    font-size: .68rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.book-bookmark .consent input {
+    width: auto;
+    min-height: 0;
+    margin-top: .2rem;
+}
+
+.book-bookmark__close {
+    position: absolute;
+    z-index: 3;
+    top: -.62rem;
+    right: -.62rem;
+    margin: 0;
+}
+
+.book-bookmark__close button {
+    display: grid;
+    width: 2.3rem;
+    height: 2.3rem;
+    place-items: center;
+    border: 1px solid rgba(246, 228, 172, .78);
+    border-radius: 50%;
+    background: var(--preview-teal);
+    color: #f6e4ac;
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+@keyframes bookmarkLandingShadow {
+    0%,
+    34% {
+        opacity: 0;
+        transform: scaleX(.35) scaleY(.4);
+    }
+    58% {
+        opacity: .72;
+        transform: scaleX(1.08) scaleY(1);
+    }
+    73% {
+        opacity: .46;
+        transform: scaleX(.94) scaleY(.82);
+    }
+    100% {
+        opacity: .55;
+        transform: scaleX(1) scaleY(.9);
+    }
+}
+
+@keyframes bookmarkThreadDrop {
+    0% {
+        opacity: 0;
+        transform: translate3d(-50%, calc(var(--bookmark-drop-distance) * -1), 9rem) rotateX(28deg) rotateZ(-7deg) scale(.86);
+    }
+    18% {
+        opacity: 1;
+    }
+    58% {
+        opacity: 1;
+        transform: translate3d(-50%, 1rem, 0) rotateX(-2.2deg) rotateZ(1.6deg) scale(1.008);
+    }
+    73% {
+        transform: translate3d(-50%, -.42rem, 0) rotateX(1.1deg) rotateZ(-.75deg) scale(.997);
+    }
+    88% {
+        transform: translate3d(-50%, .1rem, 0) rotateX(-.35deg) rotateZ(.32deg) scale(1.001);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(-50%, 0, 0) rotateX(0deg) rotateZ(0deg) scale(1);
+    }
+}
+
+@keyframes bookmarkDropOntoBook {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, calc(var(--bookmark-drop-distance) * -1), 9rem) rotateX(28deg) rotateZ(-5deg) scale(.86);
+        filter: blur(1.6px);
+    }
+    18% {
+        opacity: 1;
+    }
+    58% {
+        opacity: 1;
+        transform: translate3d(0, 1rem, 0) rotateX(-2.2deg) rotateZ(.65deg) scale(1.008);
+        filter: blur(0);
+    }
+    73% {
+        transform: translate3d(0, -.42rem, 0) rotateX(1.1deg) rotateZ(-.24deg) scale(.997);
+    }
+    88% {
+        transform: translate3d(0, .1rem, 0) rotateX(-.35deg) rotateZ(.08deg) scale(1.001);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg) scale(1);
+        filter: none;
+    }
+}
+
 .book-action {
     min-height: 46px;
     padding: .72rem 1.1rem;
@@ -1151,6 +1660,80 @@
 
     .preview-library {
         display: none;
+    }
+
+    .book-intro__book {
+        width: min(96vw, 720px);
+        height: min(60dvh, 520px);
+    }
+
+    .book-intro h1 {
+        max-width: 9ch;
+        font-size: clamp(2.65rem, 15vw, 4.8rem);
+    }
+
+    .book-intro p:not(.book-kicker) {
+        max-width: 19rem;
+    }
+
+    .book-bookmark {
+        top: var(--bookmark-top);
+        width: var(--bookmark-width);
+        max-width: min(74vw, 300px);
+    }
+
+    .book-bookmark__panel {
+        max-height: 88dvh;
+        padding: 1.08rem .72rem 3.15rem;
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2rem), 50% 100%, 0 calc(100% - 2rem));
+    }
+
+    .book-bookmark__form {
+        grid-template-columns: 1fr;
+    }
+
+    .book-bookmark h2 {
+        font-size: clamp(1.72rem, 8.8vw, 2.35rem);
+    }
+
+    .book-bookmark__close {
+        top: -.55rem;
+        right: -.35rem;
+    }
+
+    @keyframes bookmarkDropOntoBook {
+        0% {
+            opacity: 0;
+            transform: translate3d(0, calc(var(--bookmark-drop-distance) * -1), 3.4rem) rotateX(18deg) rotateZ(-3deg) scale(.9);
+            filter: blur(1px);
+        }
+        16% {
+            opacity: 1;
+        }
+        60% {
+            opacity: 1;
+            transform: translate3d(0, .72rem, 0) rotateX(-1.5deg) rotateZ(.42deg) scale(1.006);
+            filter: blur(0);
+        }
+        78% {
+            transform: translate3d(0, -.24rem, 0) rotateX(.7deg) rotateZ(-.16deg) scale(.998);
+        }
+        90% {
+            transform: translate3d(0, .06rem, 0) rotateX(-.22deg) rotateZ(.05deg) scale(1);
+        }
+        100% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg) scale(1);
+            filter: none;
+        }
+    }
+
+    .preview > .archon-webgl-scene {
+        opacity: .38;
+    }
+
+    .preview-reader {
+        transform: none;
     }
 
     .preview-stage {
@@ -1288,12 +1871,31 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .book-intro,
+    .book-intro__book,
+    .book-intro__copy,
+    .preview.is-starting .preview-reader,
+    .book-bookmark[open]::after,
+    .book-bookmark[open]::before,
+    .book-bookmark__panel {
+        animation: none !important;
+        transition-duration: .01ms !important;
+    }
+
+    .preview > .archon-webgl-scene {
+        display: none;
+    }
+
     .preview-library {
         display: none;
     }
 
     .preview-ambient-book {
         animation: none !important;
+    }
+
+    .preview-reader {
+        transform: none;
     }
 
     .preview-stage,
@@ -1304,5 +1906,13 @@
 
     .book-welcome::backdrop {
         backdrop-filter: none;
+    }
+
+    .book-bookmark::backdrop {
+        backdrop-filter: none;
+    }
+
+    .book-bookmark__panel {
+        animation: none !important;
     }
 }

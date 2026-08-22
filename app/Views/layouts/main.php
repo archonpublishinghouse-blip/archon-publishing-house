@@ -6,7 +6,7 @@ $flashSuccess = Security::flash('success');
 $flashError = Security::flash('error');
 $baseUrl = rtrim(\App\Core\Env::get('APP_URL', 'http://localhost'), '/');
 $canonical = $baseUrl . (parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
-$description = $settings['seo.description'] ?? 'Archon Publishing House helps authors write, edit, design and publish professional eBooks.';
+$description = $settings['seo.description'] ?? 'Archon Publishing House helps clients turn ideas, outlines and expertise into professionally written eBooks.';
 ?>
 <!doctype html>
 <html lang="en">
@@ -55,7 +55,7 @@ $description = $settings['seo.description'] ?? 'Archon Publishing House helps au
     <section class="newsletter">
         <div>
             <p class="eyebrow">THE ARCHON LETTER</p>
-            <h2>A measured note on the art of publishing.</h2>
+            <h2>A measured note on writing, structure and finished eBooks.</h2>
         </div>
         <form action="/newsletter" method="post">
             <input type="hidden" name="_token" value="<?=Security::csrf()?>">
@@ -72,8 +72,8 @@ $description = $settings['seo.description'] ?? 'Archon Publishing House helps au
         </div>
         <div>
             <h3>Explore</h3>
-            <a href="/services">Publishing services</a>
-            <a href="/authors">Our authors</a>
+            <a href="/services">eBook writing services</a>
+            <a href="/authors">Client authors</a>
             <a href="/about">About Archon</a>
             <a href="/blog">Journal</a>
         </div>
@@ -82,14 +82,16 @@ $description = $settings['seo.description'] ?? 'Archon Publishing House helps au
             <a href="/contact">Contact</a>
             <a href="/privacy">Privacy</a>
             <a href="/terms">Terms</a>
+            <p>hello@archonpublishinghouse.com<br>+1 (555) 014-2026</p>
         </div>
         <div>
             <h3>Start a project</h3>
-            <p>Tell us about your eBook idea, outline or manuscript.</p>
+            <p>Tell us about your eBook idea, outline, manuscript or business concept.</p>
             <a href="/quote" class="button small">Request a quote</a>
         </div>
-        <p class="copyright">&copy; <?=date('Y')?> Archon Publishing House. Demo content only.</p>
+        <p class="copyright">&copy; <?=date('Y')?> Archon Publishing House. Professional eBook writing services.</p>
     </footer>
     <script src="/assets/js/main.js" defer></script>
+    <script type="module" src="/assets/js/archon-3d-scene.js?v=20260821-3d1"></script>
 </body>
 </html>

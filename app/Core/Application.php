@@ -37,8 +37,12 @@ final class Application {
         if ($route === '/admin/leads' && $method === 'GET') $admin->leads();
         if (preg_match('#^/admin/leads/(quote|contact)/([0-9]+)$#', $route, $m) && $method === 'GET') $admin->leadDetail($m[1], (int)$m[2]);
         if (preg_match('#^/admin/leads/(quote|contact)/([0-9]+)/status$#', $route, $m) && $method === 'POST') $admin->updateLeadStatus($m[1], (int)$m[2]);
+        if (preg_match('#^/admin/leads/(quote|contact)/([0-9]+)/assign$#', $route, $m) && $method === 'POST') $admin->assignLead($m[1], (int)$m[2]);
         if (preg_match('#^/admin/leads/(quote|contact)/([0-9]+)/notes$#', $route, $m) && $method === 'POST') $admin->addLeadNote($m[1], (int)$m[2]);
         if (preg_match('#^/admin/leads/quote-attachments/([0-9]+)$#', $route, $m) && $method === 'GET') $admin->downloadQuoteAttachment((int)$m[1]);
+        if ($route === '/admin/employees' && $method === 'GET') $admin->employees();
+        if ($route === '/admin/employees/create' && $method === 'POST') $admin->createEmployee();
+        if (preg_match('#^/admin/employees/([0-9]+)/update$#', $route, $m) && $method === 'POST') $admin->updateEmployee((int)$m[1]);
         if ($route === '/admin/book-files' && $method === 'GET') $admin->bookFiles();
         if ($route === '/admin/book-files' && $method === 'POST') $admin->uploadBookFile();
         if ($route === '/admin/book-files/delete' && $method === 'POST') $admin->deleteBookFile();
