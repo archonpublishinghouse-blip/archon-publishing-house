@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260823-mobile2">
+<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260823-mobile3">
 
 <?php require __DIR__ . '/book-welcome.php'; ?>
 
@@ -153,4 +153,4 @@
     </noscript>
 </main>
 
-<script src="/assets/js/book-preview.js?v=20260823-mobile2" defer></script>
+<script src="/assets/js/book-preview.js?v=20260823-mobile3" defer></script>
