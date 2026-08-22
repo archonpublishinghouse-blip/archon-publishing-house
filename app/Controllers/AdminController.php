@@ -9,7 +9,6 @@ final class AdminController extends Controller {
         'authors' => ['table' => 'authors', 'title' => 'Authors', 'fields' => ['name', 'slug', 'bio', 'website', 'is_active', 'is_featured']],
         'services' => ['table' => 'services', 'title' => 'Services', 'fields' => ['title', 'slug', 'summary', 'description', 'benefits', 'timeline', 'starting_price', 'display_order', 'is_active']],
         'posts' => ['table' => 'blog_posts', 'title' => 'Journal', 'fields' => ['title', 'slug', 'excerpt', 'body', 'status', 'published_at']],
-        'settings' => ['table' => 'settings', 'title' => 'Site settings', 'fields' => ['setting_key', 'setting_value']],
         'reviews' => ['table' => 'reviews', 'title' => 'Reviews', 'fields' => ['rating', 'body', 'status'], 'creatable' => false],
         'books' => ['table' => 'books', 'title' => 'eBooks', 'fields' => ['title', 'slug', 'author_id', 'price', 'sale_price', 'isbn', 'short_description', 'description', 'published_at', 'is_active', 'is_featured']],
         'categories' => ['table' => 'categories', 'title' => 'Categories', 'fields' => ['name', 'slug']],
@@ -46,6 +45,183 @@ final class AdminController extends Controller {
         $employees = $this->crmUsers();
         $canManageAll = $this->canManageAllLeads($admin);
         $this->render('admin/leads', compact('admin', 'canManageAll', 'leads', 'metrics', 'source', 'status', 'q', 'assigned', 'statusOptions', 'employees'));
+    }
+
+    public function profile(): never {
+        $admin = $this->requireCrmUser();
+        $record = $this->one('SELECT id,name,email,phone,job_title,role FROM admins WHERE id=?', [(int)$admin['id']]);
+        if (!$record) $this->render('errors/404', [], 404);
+        $canManageAll = $this->canManageAllLeads($admin);
+        $this->render('admin/profile', compact('admin', 'record', 'canManageAll'));
+    }
+
+    public function updateProfile(): never {
+        $admin = $this->requireCrmUser();
+        $this->requirePost();
+        $record = $this->one('SELECT * FROM admins WHERE id=? AND is_active=1', [(int)$admin['id']]);
+        if (!$record) $this->render('errors/404', [], 404);
+
+        $canManageAll = $this->canManageAllLeads($admin);
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+        $profileSubmitted = $canManageAll && (array_key_exists('name', $_POST) || array_key_exists('email', $_POST));
+        $passwordSubmitted = $newPassword !== '' || $confirmPassword !== '' || ($_POST['current_password'] ?? '') !== '';
+        $passwordUpdated = false;
+
+        if (!$profileSubmitted && !$passwordSubmitted) {
+            Security::flash('error', 'No account changes were submitted.');
+            Security::redirect('/admin/profile');
+        }
+
+        if ($profileSubmitted) {
+            $name = trim($_POST['name'] ?? '');
+            $email = filter_var($_POST['email'] ?? '', FILTER_VALIDATE_EMAIL);
+            if (strlen($name) < 2 || !$email) {
+                Security::flash('error', 'Use a valid name and email address.');
+                Security::redirect('/admin/profile');
+            }
+            try {
+                $this->db()->prepare('UPDATE admins SET name=?, email=?, phone=?, job_title=? WHERE id=?')->execute([
+                    $name,
+                    $email,
+                    trim($_POST['phone'] ?? ''),
+                    trim($_POST['job_title'] ?? ''),
+                    (int)$admin['id'],
+                ]);
+            } catch (\PDOException) {
+                Security::flash('error', 'That email is already used by another CRM user.');
+                Security::redirect('/admin/profile');
+            }
+        }
+
+        if ($passwordSubmitted) {
+            $currentPassword = $_POST['current_password'] ?? '';
+            if (!password_verify($currentPassword, $record['password_hash'] ?? '')) {
+                Security::flash('error', 'Current password is incorrect.');
+                Security::redirect('/admin/profile');
+            }
+            if ($newPassword !== $confirmPassword) {
+                Security::flash('error', 'New password confirmation does not match.');
+                Security::redirect('/admin/profile');
+            }
+            if (!$this->validPassword($newPassword)) {
+                Security::flash('error', 'New password must be at least 10 characters and include letters and numbers.');
+                Security::redirect('/admin/profile');
+            }
+            $this->db()->prepare('UPDATE admins SET password_hash=? WHERE id=?')->execute([password_hash($newPassword, PASSWORD_DEFAULT), (int)$admin['id']]);
+            $passwordUpdated = true;
+        }
+
+        $fresh = $this->one('SELECT id,name,email,role,is_active FROM admins WHERE id=? AND is_active=1', [(int)$admin['id']]);
+        if ($fresh) $_SESSION['admin'] = ['id' => $fresh['id'], 'name' => $fresh['name'], 'email' => $fresh['email'], 'role' => $fresh['role'] ?: 'admin'];
+        Security::flash('success', $profileSubmitted && !$passwordUpdated ? 'Account settings updated.' : 'Password updated.');
+        Security::redirect('/admin/profile');
+    }
+
+    public function createLeadForm(): never {
+        $admin = $this->requireLeadManager();
+        $employees = $this->crmUsers();
+        $services = $this->all('SELECT id,title FROM services WHERE is_active=1 ORDER BY display_order,title');
+        $quoteStatuses = $this->leadStatuses['quote'];
+        $contactStatuses = $this->leadStatuses['contact'];
+        $this->render('admin/lead-create', compact('admin', 'employees', 'services', 'quoteStatuses', 'contactStatuses'));
+    }
+
+    public function createLead(): never {
+        $admin = $this->requireLeadManager();
+        $this->requirePost();
+        $kind = $_POST['kind'] ?? 'quote';
+        if (!in_array($kind, ['quote', 'contact'], true)) {
+            Security::flash('error', 'Choose a valid lead type.');
+            Security::redirect('/admin/leads/create');
+        }
+
+        $name = trim($_POST['name'] ?? '');
+        $email = filter_var($_POST['email'] ?? '', FILTER_VALIDATE_EMAIL);
+        $phone = trim($_POST['phone'] ?? '');
+        $assignedId = (int)($_POST['assigned_admin_id'] ?? 0);
+        $assignedAt = null;
+        if ($assignedId > 0) {
+            $assignee = $this->one("SELECT id FROM admins WHERE id=? AND is_active=1 AND role IN ('admin','super_admin','employee')", [$assignedId]);
+            if (!$assignee) {
+                Security::flash('error', 'Choose a valid active CRM user for assignment.');
+                Security::redirect('/admin/leads/create');
+            }
+            $assignedAt = date('Y-m-d H:i:s');
+        } else {
+            $assignedId = null;
+        }
+
+        if (strlen($name) < 2 || !$email) {
+            Security::flash('error', 'Use a valid client name and email address.');
+            Security::redirect('/admin/leads/create');
+        }
+
+        if ($kind === 'quote') {
+            $description = trim($_POST['description'] ?? '');
+            $status = $_POST['quote_status'] ?? 'new';
+            if (!in_array($status, $this->leadStatuses['quote'], true)) $status = 'new';
+            if (strlen($description) < 2) {
+                Security::flash('error', 'Add a short project description for the manual quote lead.');
+                Security::redirect('/admin/leads/create');
+            }
+            $serviceId = (int)($_POST['service_id'] ?? 0);
+            if ($serviceId > 0 && !$this->one('SELECT id FROM services WHERE id=?', [$serviceId])) $serviceId = 0;
+            $this->db()->prepare('
+                INSERT INTO quote_requests
+                    (name,email,phone,service_id,book_title,genre,word_count,project_stage,completion_date,budget_range,description,status,assigned_admin_id,assigned_at,lead_source)
+                VALUES
+                    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ')->execute([
+                $name,
+                $email,
+                $phone,
+                $serviceId > 0 ? $serviceId : null,
+                trim($_POST['book_title'] ?? ''),
+                trim($_POST['genre'] ?? ''),
+                trim($_POST['word_count'] ?? ''),
+                trim($_POST['project_stage'] ?? ''),
+                ($_POST['completion_date'] ?? '') !== '' ? $_POST['completion_date'] : null,
+                trim($_POST['budget_range'] ?? ''),
+                $description,
+                $status,
+                $assignedId,
+                $assignedAt,
+                'manual_admin',
+            ]);
+            $leadId = (int)$this->db()->lastInsertId();
+            $this->logLeadActivity($admin, 'quote', $leadId, 'manual_lead', 'Manual quote lead created in the CRM.');
+            Security::flash('success', 'Manual quote lead created.');
+            Security::redirect('/admin/leads/quote/'.$leadId);
+        }
+
+        $message = trim($_POST['message'] ?? '');
+        $status = $_POST['contact_status'] ?? 'new';
+        if (!in_array($status, $this->leadStatuses['contact'], true)) $status = 'new';
+        if (strlen($message) < 2) {
+            Security::flash('error', 'Add a short message for the manual contact lead.');
+            Security::redirect('/admin/leads/create');
+        }
+        $this->db()->prepare('
+            INSERT INTO contact_messages
+                (name,email,phone,subject,message,status,assigned_admin_id,assigned_at,lead_source)
+            VALUES
+                (?,?,?,?,?,?,?,?,?)
+        ')->execute([
+            $name,
+            $email,
+            $phone,
+            trim($_POST['subject'] ?? '') ?: 'Manual lead',
+            $message,
+            $status,
+            $assignedId,
+            $assignedAt,
+            'manual_admin',
+        ]);
+        $leadId = (int)$this->db()->lastInsertId();
+        $this->logLeadActivity($admin, 'contact', $leadId, 'manual_lead', 'Manual contact lead created in the CRM.');
+        Security::flash('success', 'Manual contact lead created.');
+        Security::redirect('/admin/leads/contact/'.$leadId);
     }
 
     public function leadDetail(string $kind, int $id): never {
@@ -113,6 +289,40 @@ final class AdminController extends Controller {
         }
         Security::flash('success', 'Note added to the lead.');
         Security::redirect('/admin/leads/'.$kind.'/'.$id);
+    }
+
+    public function deleteLead(string $kind, int $id): never {
+        $admin = $this->requireLeadManager();
+        $this->requirePost();
+        if (!isset($this->leadStatuses[$kind])) $this->render('errors/404', [], 404);
+        [$lead, $attachments] = $this->loadLead($kind, $id, $admin);
+        if (!$lead) $this->render('errors/404', [], 404);
+        if (trim($_POST['confirm_delete'] ?? '') !== 'DELETE') {
+            Security::flash('error', 'Type DELETE to remove this lead.');
+            Security::redirect('/admin/leads/'.$kind.'/'.$id);
+        }
+
+        $this->db()->beginTransaction();
+        try {
+            $entityType = $kind === 'quote' ? 'quote_request' : 'contact_message';
+            $this->db()->prepare('DELETE FROM activity_logs WHERE entity_type=? AND entity_id=?')->execute([$entityType, $id]);
+            if ($kind === 'quote') {
+                $this->db()->prepare('DELETE FROM quote_notes WHERE quote_request_id=?')->execute([$id]);
+                $this->db()->prepare('DELETE FROM quote_attachments WHERE quote_request_id=?')->execute([$id]);
+                $this->db()->prepare('DELETE FROM quote_requests WHERE id=?')->execute([$id]);
+            } else {
+                $this->db()->prepare('DELETE FROM contact_messages WHERE id=?')->execute([$id]);
+            }
+            $this->db()->commit();
+        } catch (\Throwable $exception) {
+            $this->db()->rollBack();
+            Security::flash('error', 'The lead could not be removed. Please try again.');
+            Security::redirect('/admin/leads/'.$kind.'/'.$id);
+        }
+
+        if ($kind === 'quote') $this->deleteQuoteAttachmentFiles($attachments);
+        Security::flash('success', 'Lead removed from the CRM.');
+        Security::redirect('/admin/leads');
     }
 
     public function employees(): never {
@@ -332,6 +542,21 @@ final class AdminController extends Controller {
 
     private function crmUsers(): array {
         return $this->all("SELECT id,name,email,role,is_active FROM admins WHERE is_active=1 AND role IN ('admin','super_admin','employee') ORDER BY role='employee' DESC, name");
+    }
+
+    private function validPassword(string $password): bool {
+        return strlen($password) >= 10 && preg_match('/[A-Za-z]/', $password) && preg_match('/\d/', $password);
+    }
+
+    private function deleteQuoteAttachmentFiles(array $attachments): void {
+        $base = realpath(dirname(__DIR__, 2).'/private/quote-attachments');
+        if (!$base) return;
+        foreach ($attachments as $attachment) {
+            $storageName = basename((string)($attachment['storage_name'] ?? ''));
+            if ($storageName === '') continue;
+            $path = realpath($base.DIRECTORY_SEPARATOR.$storageName);
+            if ($path && str_starts_with($path, $base.DIRECTORY_SEPARATOR) && is_file($path)) @unlink($path);
+        }
     }
 
     private function leadRows(string $source, string $status, string $q, string $assigned, int $limit, array $admin): array {

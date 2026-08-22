@@ -7,15 +7,16 @@ $canManageAll = in_array($currentRole, ['admin', 'super_admin'], true);
 $adminLinks = [
     ['href' => '/admin', 'label' => 'Dashboard', 'key' => 'dashboard'],
     ['href' => '/admin/leads', 'label' => 'Lead CRM', 'key' => 'leads'],
+    ['href' => '/admin/profile', 'label' => 'Account Settings', 'key' => 'profile'],
 ];
 if ($canManageAll) {
     $adminLinks = array_merge($adminLinks, [
+        ['href' => '/admin/leads/create', 'label' => 'Create Lead', 'key' => 'lead-create'],
         ['href' => '/admin/employees', 'label' => 'Team Accounts', 'key' => 'employees'],
         ['href' => '/admin/services', 'label' => 'Services', 'key' => 'services'],
         ['href' => '/admin/authors', 'label' => 'Authors', 'key' => 'authors'],
         ['href' => '/admin/posts', 'label' => 'Journal', 'key' => 'posts'],
         ['href' => '/admin/reviews', 'label' => 'Reviews', 'key' => 'reviews'],
-        ['href' => '/admin/settings', 'label' => 'Settings', 'key' => 'settings'],
     ]);
 }
 ?>

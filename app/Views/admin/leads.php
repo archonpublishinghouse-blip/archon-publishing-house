@@ -51,6 +51,7 @@ $sourceLabels = ['all' => 'All leads', 'quotes' => 'Quote requests', 'contacts' 
         </form>
         <?php if ($canManageAll): ?>
             <div class="crm-export-row">
+                <a class="button small" href="/admin/leads/create">Create manual lead</a>
                 <a href="/admin/export/quotes">Export quotes CSV</a>
                 <a href="/admin/export/contacts">Export messages CSV</a>
             </div>

@@ -83,6 +83,17 @@ $description = $isQuote ? $lead['description'] : $lead['message'];
                         <button class="button">Save note</button>
                     </form>
                 </section>
+                <?php if ($canManageAll): ?>
+                    <section class="panel danger-zone">
+                        <h2>Remove lead</h2>
+                        <p>This permanently removes the lead, its timeline records, and any quote attachments.</p>
+                        <form method="post" action="/admin/leads/<?=Security::e($kind)?>/<?=$lead['id']?>/delete">
+                            <input type="hidden" name="_token" value="<?=Security::csrf()?>">
+                            <label>Type DELETE to confirm<input name="confirm_delete" autocomplete="off" required></label>
+                            <button class="button danger">Remove lead</button>
+                        </form>
+                    </section>
+                <?php endif; ?>
             </aside>
         </div>
         <section class="panel crm-timeline">
