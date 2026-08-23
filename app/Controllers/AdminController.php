@@ -118,6 +118,34 @@ final class AdminController extends Controller {
         Security::redirect('/admin/profile');
     }
 
+    public function bookContact(): never {
+        $admin = $this->requireLeadManager();
+        $settings = $this->bookContactDefaults();
+        $settings = $this->settings($settings);
+        $this->render('admin/book-contact', compact('admin', 'settings'));
+    }
+
+    public function updateBookContact(): never {
+        $this->requireLeadManager();
+        $this->requirePost();
+        $email = filter_var(trim($_POST['book_contact_email'] ?? ''), FILTER_VALIDATE_EMAIL);
+        $phone = trim($_POST['book_contact_phone'] ?? '');
+
+        if (!$email) {
+            Security::flash('error', 'Use a valid public contact email address.');
+            Security::redirect('/admin/book-contact');
+        }
+        if (strlen($phone) < 5 || strlen($phone) > 40) {
+            Security::flash('error', 'Use a readable public phone or WhatsApp number.');
+            Security::redirect('/admin/book-contact');
+        }
+
+        $this->saveSetting('book.contact.email', $email);
+        $this->saveSetting('book.contact.phone', $phone);
+        Security::flash('success', 'Book contact details updated.');
+        Security::redirect('/admin/book-contact');
+    }
+
     public function createLeadForm(): never {
         $admin = $this->requireLeadManager();
         $employees = $this->crmUsers();
@@ -546,6 +574,13 @@ final class AdminController extends Controller {
 
     private function validPassword(string $password): bool {
         return strlen($password) >= 10 && preg_match('/[A-Za-z]/', $password) && preg_match('/\d/', $password);
+    }
+
+    private function bookContactDefaults(): array {
+        return [
+            'book.contact.email' => 'hello@archonpublishinghouse.com',
+            'book.contact.phone' => '+1 (555) 014-2026',
+        ];
     }
 
     private function deleteQuoteAttachmentFiles(array $attachments): void {

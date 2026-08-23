@@ -1,4 +1,11 @@
-<?php $serviceSlices=array_chunk($services??[],3);$authorSlices=array_chunk($authors??[],3);$reviewSlices=array_chunk($testimonials??[],3); ?>
+<?php
+$serviceSlices=array_chunk($services??[],3);
+$authorSlices=array_chunk($authors??[],3);
+$reviewSlices=array_chunk($testimonials??[],3);
+$bookContact=$bookContact??[];
+$bookContactEmail=$bookContact['book.contact.email']??'hello@archonpublishinghouse.com';
+$bookContactPhone=$bookContact['book.contact.phone']??'+1 (555) 014-2026';
+?>
 
 <template data-book-page="frontispiece" data-book-url="/">
     <div class="chapter-marker">FRONTISPIECE</div>
@@ -43,7 +50,7 @@
     <p>Archon Publishing House is a professional eBook writing studio for clients with ideas, expertise, stories, frameworks or drafts that need to become finished manuscripts.</p>
     <p>We help define the reader, clarify the book promise, organize the structure and write or refine the manuscript with care.</p>
     <p>Our work is built for business owners, coaches, consultants, founders, speakers and first-time authors who want a book that feels credible and complete.</p>
-    <p><strong>Email:</strong> hello@archonpublishinghouse.com<br><strong>Phone:</strong> +1 (555) 014-2026</p>
+    <p><strong>Email:</strong> <?=Security::e($bookContactEmail)?><br><strong>Phone:</strong> <?=Security::e($bookContactPhone)?></p>
     <p class="page-no">2</p>
 </template>
 
@@ -169,7 +176,7 @@
     <h2>Start a conversation.</h2>
     <p>Tell us about your eBook idea, outline, manuscript or business concept. We will reply with care.</p>
     <a class="book-link" href="/contact" data-bookmark-form="contact">Contact Us</a>
-    <p><strong>Email:</strong> hello@archonpublishinghouse.com<br><strong>Phone:</strong> +1 (555) 014-2026</p>
+    <p><strong>Email:</strong> <?=Security::e($bookContactEmail)?><br><strong>Phone:</strong> <?=Security::e($bookContactPhone)?></p>
     <p>For a detailed project enquiry, <a href="/quote" data-bookmark-form="quote">request a quote</a> using the existing secure form.</p>
     <p class="page-no">13</p>
 </template>

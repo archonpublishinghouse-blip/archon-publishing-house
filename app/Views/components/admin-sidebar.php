@@ -12,6 +12,7 @@ $adminLinks = [
 if ($canManageAll) {
     $adminLinks = array_merge($adminLinks, [
         ['href' => '/admin/leads/create', 'label' => 'Create Lead', 'key' => 'lead-create'],
+        ['href' => '/admin/book-contact', 'label' => 'Book Contact', 'key' => 'book-contact'],
         ['href' => '/admin/employees', 'label' => 'Team Accounts', 'key' => 'employees'],
         ['href' => '/admin/services', 'label' => 'Services', 'key' => 'services'],
         ['href' => '/admin/authors', 'label' => 'Authors', 'key' => 'authors'],

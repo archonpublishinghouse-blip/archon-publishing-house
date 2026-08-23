@@ -95,6 +95,10 @@ final class SiteController extends Controller {
             'posts' => [],
             'testimonials' => [],
             'chapters' => BookChapterService::chapters(),
+            'bookContact' => $this->settings([
+                'book.contact.email' => 'hello@archonpublishinghouse.com',
+                'book.contact.phone' => '+1 (555) 014-2026',
+            ]),
         ];
 
         if ($this->dbAvailable()) {

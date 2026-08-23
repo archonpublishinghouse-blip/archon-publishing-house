@@ -387,7 +387,9 @@
             const usableRect=(rect.width>0&&rect.height>0)?rect:stageRect;
             const viewportWidth=document.documentElement.clientWidth||window.innerWidth;
             const viewportHeight=document.documentElement.clientHeight||window.innerHeight;
-            const targetWidth=clampNumber(usableRect.width*.54,240,350);
+            const targetWidth=mode==='mobile'
+                ? clampNumber(usableRect.width*.42,165,Math.min(235,viewportWidth-32))
+                : clampNumber(usableRect.width*.54,240,350);
             const isRightPage=page.classList?.contains('is-right')||usableRect.left>=stageRect.left+stageRect.width*.5;
             const sideInset=clampNumber(usableRect.width*.045,10,24);
             const pageSideLeft=isRightPage
@@ -395,7 +397,9 @@
                 : usableRect.right-targetWidth*.5-sideInset;
             const left=clampNumber(pageSideLeft,targetWidth*.5+8,viewportWidth-targetWidth*.5-8);
             const top=clampNumber(usableRect.top,8,Math.max(8,viewportHeight-usableRect.height*.72));
-            const maxHeight=clampNumber(usableRect.height*.9,360,Math.max(360,viewportHeight-24));
+            const maxHeight=mode==='mobile'
+                ? clampNumber(usableRect.height*.78,260,Math.max(260,viewportHeight-96))
+                : clampNumber(usableRect.height*.9,360,Math.max(360,viewportHeight-24));
             const dropDistance=Math.max(top+targetWidth,viewportHeight*.58);
             bookmarkDialog.style.setProperty('--bookmark-left',`${left}px`);
             bookmarkDialog.style.setProperty('--bookmark-top',`${top}px`);

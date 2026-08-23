@@ -1945,14 +1945,14 @@
 
     .book-bookmark {
         top: var(--bookmark-top);
-        width: var(--bookmark-width);
-        max-width: min(74vw, 300px);
+        width: min(var(--bookmark-width), calc(var(--pp) * .62), 235px);
+        max-width: min(var(--bookmark-width), calc(var(--pp) * .62), 235px);
     }
 
     .book-bookmark__panel {
-        max-height: 88dvh;
-        padding: 1.08rem .72rem 3.15rem;
-        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2rem), 50% 100%, 0 calc(100% - 2rem));
+        max-height: min(var(--bookmark-max-height), 76dvh);
+        padding: .92rem .55rem 2.55rem;
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1.75rem), 50% 100%, 0 calc(100% - 1.75rem));
     }
 
     .book-bookmark__form {
@@ -1960,12 +1960,52 @@
     }
 
     .book-bookmark h2 {
-        font-size: clamp(1.72rem, 8.8vw, 2.35rem);
+        font-size: clamp(1.24rem, 6.1vw, 1.62rem);
+    }
+
+    .book-bookmark .book-kicker {
+        font-size: .5rem;
+        letter-spacing: .13em;
+    }
+
+    .book-bookmark__form {
+        gap: .34rem;
+    }
+
+    .book-bookmark label {
+        gap: .22rem;
+        margin-bottom: .28rem;
+        font-size: .56rem;
+        letter-spacing: .045em;
+    }
+
+    .book-bookmark input,
+    .book-bookmark textarea,
+    .book-bookmark select {
+        min-height: 32px;
+        padding: .42rem .45rem;
+        font-size: .72rem;
+    }
+
+    .book-bookmark textarea {
+        min-height: 4.8rem;
+    }
+
+    .book-bookmark__status {
+        min-height: 1.35rem;
+        padding: .38rem .45rem;
+        font-size: .58rem;
+    }
+
+    .book-bookmark .book-action {
+        min-height: 36px;
+        padding: .54rem .5rem;
+        font-size: .56rem;
     }
 
     .book-bookmark__close {
-        top: -.55rem;
-        right: -.35rem;
+        top: -.48rem;
+        right: -.3rem;
     }
 
     @keyframes bookmarkDropOntoBook {
@@ -2328,14 +2368,13 @@
     }
 
     .book-bookmark {
-        left: 50vw !important;
-        width: min(86vw, 330px) !important;
-        max-width: min(86vw, 330px);
+        width: min(var(--bookmark-width), calc(var(--pp) * .6), 225px) !important;
+        max-width: min(var(--bookmark-width), calc(var(--pp) * .6), 225px);
     }
 
     .book-bookmark__panel {
-        max-height: min(86dvh, 650px);
-        padding: 1.15rem .86rem 3rem;
+        max-height: min(var(--bookmark-max-height), 74dvh, 560px);
+        padding: .86rem .5rem 2.45rem;
     }
 }
 
