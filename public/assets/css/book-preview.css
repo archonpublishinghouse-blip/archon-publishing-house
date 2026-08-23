@@ -2010,6 +2010,41 @@
         filter: drop-shadow(0 1.2rem 1.35rem rgba(0, 0, 0, .42));
     }
 
+    .preview:not([data-state="0"]):not([data-state="10"]) .preview-stage {
+        border-radius: 0 13px 13px 0;
+    }
+
+    .preview:not([data-state="0"]):not([data-state="10"]) .preview-stage::before {
+        inset: .52rem -1.08rem -1rem -.78rem;
+        border-radius: 5px 15px 16px 6px;
+        border-color: rgba(98, 71, 28, .48);
+        background:
+            linear-gradient(90deg, rgba(66, 42, 13, .18), transparent 8%, transparent 88%, rgba(79, 51, 14, .28)),
+            repeating-linear-gradient(0deg, #c8b680 0 1px, #f8ecc6 1px 3px, #d2bf8a 3px 4px);
+        box-shadow:
+            0 1.7rem 2.2rem rgba(0, 0, 0, .36),
+            .42rem .62rem 0 rgba(86, 61, 24, .3),
+            inset .72rem 0 .9rem rgba(61, 41, 15, .2),
+            inset -1.15rem 0 1.35rem rgba(78, 49, 14, .2);
+    }
+
+    .preview:not([data-state="0"]):not([data-state="10"]) .preview-stage::after {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        inset: -.62rem -1.28rem -1.18rem -1.28rem;
+        border: 1px solid rgba(221, 199, 143, .5);
+        border-radius: 7px 18px 18px 8px;
+        background:
+            linear-gradient(90deg, rgba(0, 0, 0, .36), transparent 14%, rgba(255, 255, 255, .035) 52%, rgba(0, 0, 0, .22)),
+            linear-gradient(135deg, #092d30, #15494b 52%, #08272a);
+        box-shadow:
+            inset .95rem 0 1.35rem rgba(0, 0, 0, .34),
+            inset -.55rem 0 .9rem rgba(255, 255, 255, .045),
+            0 2rem 3rem rgba(0, 0, 0, .45);
+        pointer-events: none;
+    }
+
     .preview-reader {
         width: var(--pp);
     }
@@ -2024,6 +2059,19 @@
     }
 
     .preview-spine {
+        display: block;
+        z-index: 98;
+        left: -.36rem;
+        top: .2rem;
+        bottom: -.9rem;
+        width: .72rem;
+        border-radius: 6px 0 0 6px;
+        background: linear-gradient(90deg, rgba(43, 28, 10, .42), rgba(177, 146, 80, .2) 48%, rgba(255, 246, 205, .25));
+        box-shadow: inset -.18rem 0 .42rem rgba(0, 0, 0, .25), .16rem 0 .4rem rgba(71, 47, 13, .2);
+    }
+
+    .preview-spine::before,
+    .preview-spine::after {
         display: none;
     }
 
