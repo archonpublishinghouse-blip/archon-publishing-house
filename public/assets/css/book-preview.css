@@ -171,22 +171,23 @@
         visibility: visible;
         opacity: 0;
         transform: scale(1.035);
-        filter: blur(2px);
+        filter: blur(.8px);
     }
-    16% {
+    10% {
         opacity: 1;
         transform: scale(1);
         filter: blur(0);
     }
-    82% {
+    86% {
         opacity: 1;
         transform: scale(1);
+        filter: blur(0);
     }
     100% {
         visibility: hidden;
         opacity: 0;
-        transform: scale(.965) translateY(-1.2rem);
-        filter: blur(5px);
+        transform: scale(.982) translateY(-.65rem);
+        filter: blur(.4px);
     }
 }
 
@@ -392,12 +393,15 @@
 
 @keyframes previewReaderStart {
     0% {
-        opacity: .22;
+        opacity: .38;
         transform: perspective(1500px) translate3d(0, 0, 11rem) rotateX(10deg) rotateY(-28deg) scale(1.16);
-        filter: blur(1px) drop-shadow(0 2rem 1.8rem rgba(0, 0, 0, .4));
+        filter: blur(.25px) drop-shadow(0 2rem 1.8rem rgba(0, 0, 0, .4));
+    }
+    34% {
+        opacity: 1;
+        filter: blur(0) drop-shadow(0 2.2rem 1.9rem rgba(0, 0, 0, .36));
     }
     58% {
-        opacity: 1;
         transform: perspective(1500px) translate3d(0, -1rem, -6rem) rotateX(4deg) rotateY(378deg) scale(.86);
         filter: blur(0) drop-shadow(0 2.4rem 2rem rgba(0, 0, 0, .34));
     }

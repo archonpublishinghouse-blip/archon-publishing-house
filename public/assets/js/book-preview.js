@@ -90,7 +90,7 @@
         splash?.addEventListener('animationend',event=>{
             if(event.target===splash)dismissSplash();
         });
-        window.setTimeout(dismissSplash,matchMedia('(prefers-reduced-motion: reduce)').matches?120:3950);
+        window.setTimeout(dismissSplash,matchMedia('(prefers-reduced-motion: reduce)').matches?120:3600);
 
         sheets.slice(1,9).forEach(sheet=>sheet.style.display='none');
 
