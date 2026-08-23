@@ -23,6 +23,9 @@ $canonical = $baseUrl . $canonicalRoute;
  <meta property="og:description" content="<?=Security::e($description)?>">
  <meta property="og:url" content="<?=Security::e($canonical)?>">
  <title><?=Security::e($siteTitle)?></title>
+ <link rel="icon" type="image/png" href="/assets/images/brand/archon-logo-transparent.png">
+ <link rel="shortcut icon" type="image/png" href="/assets/images/brand/archon-logo-transparent.png">
+ <link rel="apple-touch-icon" href="/assets/images/brand/archon-logo-transparent.png">
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

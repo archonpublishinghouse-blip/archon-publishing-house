@@ -12,6 +12,9 @@ $flashError = Security::flash('error');
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?=Security::e($siteTitle)?></title>
+    <link rel="icon" type="image/png" href="/assets/images/brand/archon-logo-transparent.png">
+    <link rel="shortcut icon" type="image/png" href="/assets/images/brand/archon-logo-transparent.png">
+    <link rel="apple-touch-icon" href="/assets/images/brand/archon-logo-transparent.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
