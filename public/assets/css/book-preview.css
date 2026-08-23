@@ -74,7 +74,8 @@
     color: #f6e4ac;
     pointer-events: none;
     background:
-        radial-gradient(circle at 50% 45%, rgba(221, 199, 143, .2), transparent 18%),
+        radial-gradient(circle at 50% 33%, rgba(246, 228, 172, .24), transparent 12%),
+        radial-gradient(circle at 50% 55%, rgba(29, 83, 86, .42), transparent 24%),
         radial-gradient(ellipse at center, rgba(13, 62, 66, .98), rgba(3, 16, 17, 1) 72%);
     animation: bookSplashSequence 3.85s cubic-bezier(.22, .72, .18, 1) forwards;
 }
@@ -93,8 +94,13 @@
 
 .book-splash::before {
     inset: 1.2rem;
-    border: 1px solid rgba(221, 199, 143, .24);
-    box-shadow: inset 0 0 5rem rgba(0, 0, 0, .24);
+    border: 1px solid rgba(221, 199, 143, .28);
+    background:
+        linear-gradient(115deg, transparent 0 42%, rgba(246, 228, 172, .09) 47%, transparent 54%),
+        radial-gradient(rgba(242, 235, 208, .16) .5px, transparent .7px);
+    background-size: 100% 100%, 8px 8px;
+    box-shadow: inset 0 0 5rem rgba(0, 0, 0, .28);
+    animation: bookSplashFrame 3.4s ease forwards;
 }
 
 .book-splash::after {
@@ -107,14 +113,16 @@
 
 .book-splash__mark {
     position: absolute;
-    width: clamp(7rem, 21vw, 13rem);
+    width: clamp(8rem, 24vw, 15rem);
     aspect-ratio: 1;
-    border: 1px solid rgba(221, 199, 143, .34);
+    border: 1px solid rgba(221, 199, 143, .42);
     border-radius: 50%;
-    background: url('/assets/images/brand/archon-logo-transparent.png') center / 116% auto no-repeat;
-    opacity: .14;
-    filter: drop-shadow(0 1rem 1.4rem rgba(0, 0, 0, .24));
-    transform: translateY(-4rem) scale(.88);
+    background:
+        radial-gradient(circle, rgba(246, 228, 172, .1), transparent 66%),
+        url('/assets/images/brand/archon-logo-transparent.png') center / 112% auto no-repeat;
+    opacity: .2;
+    filter: drop-shadow(0 1rem 1.4rem rgba(0, 0, 0, .28)) drop-shadow(0 0 1.4rem rgba(221, 199, 143, .12));
+    transform: translateY(-5.2rem) scale(.88);
     animation: bookSplashMark 3.25s ease forwards;
 }
 
@@ -124,6 +132,15 @@
     max-width: min(90vw, 760px);
     text-align: center;
     text-shadow: 0 .28rem .9rem rgba(0, 0, 0, .42);
+}
+
+.book-splash__copy::before {
+    content: "";
+    display: block;
+    width: clamp(3rem, 8vw, 4.8rem);
+    margin: 0 auto 1.05rem;
+    border-top: 1px solid rgba(221, 199, 143, .78);
+    box-shadow: 0 .18rem .8rem rgba(221, 199, 143, .22);
 }
 
 .book-splash__copy p {
@@ -140,6 +157,7 @@
     letter-spacing: -.045em;
     text-transform: uppercase;
     text-wrap: balance;
+    filter: drop-shadow(0 .45rem .7rem rgba(0, 0, 0, .34));
 }
 
 .book-splash__copy span {
@@ -185,6 +203,22 @@
     100% {
         opacity: 0;
         transform: translateY(4.2rem) scaleX(.42);
+    }
+}
+
+@keyframes bookSplashFrame {
+    0% {
+        opacity: 0;
+        transform: scale(.985);
+    }
+    24%,
+    82% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.02);
     }
 }
 
@@ -1872,19 +1906,40 @@
     }
 
     .book-intro__book {
-        width: min(88vw, 660px);
-        height: min(54dvh, 480px);
+        width: min(78vw, 360px);
+        height: min(56dvh, 500px);
+        max-height: calc(100dvh - 290px);
+        border-radius: .4rem;
+    }
+
+    .book-intro__copy {
+        max-width: min(70vw, 300px);
     }
 
     .book-intro h1 {
-        max-width: 8ch;
-        font-size: clamp(2.25rem, 12.5vw, 4rem);
-        line-height: .86;
+        max-width: 7.4ch;
+        font-size: clamp(1.95rem, 10.2vw, 3.2rem);
+        line-height: .88;
     }
 
     .book-intro p:not(.book-kicker) {
-        max-width: min(72vw, 18rem);
-        font-size: clamp(.92rem, 4vw, 1.08rem);
+        max-width: min(62vw, 15rem);
+        font-size: clamp(.82rem, 3.4vw, .98rem);
+        line-height: 1.45;
+    }
+
+    .book-intro__button {
+        min-height: 44px;
+        padding: .78rem 1.05rem;
+        font-size: .66rem;
+    }
+
+    .preview .preview-face[data-face="cover"]::after {
+        top: clamp(.95rem, 2.2dvh, 1.25rem);
+        width: clamp(4.7rem, 21vw, 5.8rem);
+        opacity: .9;
+        background-position: 48.3% 82.4%;
+        background-size: 168.35% 120.48%;
     }
 
     .book-bookmark {
@@ -1990,10 +2045,10 @@
     }
 
     .preview .preview-face[data-face="cover"] h1 {
-        max-width: 7.1ch;
-        margin-top: clamp(3.7rem, 9dvh, 4.9rem);
-        font-size: clamp(2.18rem, 10.2vw, 3.05rem);
-        line-height: .86;
+        max-width: 6.7ch;
+        margin-top: clamp(5.75rem, 13dvh, 6.65rem);
+        font-size: clamp(2rem, 9.1vw, 2.76rem);
+        line-height: .87;
         overflow-wrap: normal;
     }
 
@@ -2101,12 +2156,33 @@
     }
 
     .book-intro__book {
-        width: min(84vw, 620px);
-        height: min(48dvh, 400px);
+        width: min(74vw, 330px);
+        height: min(52dvh, 440px);
+        max-height: calc(100dvh - 260px);
+    }
+
+    .book-intro__copy {
+        max-width: min(66vw, 280px);
     }
 
     .book-intro h1 {
-        font-size: clamp(2rem, 11vw, 3.35rem);
+        font-size: clamp(1.72rem, 8.9vw, 2.65rem);
+    }
+
+    .book-intro p:not(.book-kicker) {
+        max-width: min(58vw, 13.5rem);
+        font-size: clamp(.76rem, 3.1vw, .88rem);
+    }
+
+    .book-intro__button {
+        min-height: 40px;
+        padding: .68rem .9rem;
+        font-size: .58rem;
+    }
+
+    .preview .preview-face[data-face="cover"]::after {
+        width: clamp(4rem, 18vw, 5rem);
+        top: .8rem;
     }
 
     .preview .chapter-marker {
@@ -2132,8 +2208,8 @@
     }
 
     .preview .preview-face[data-face="cover"] h1 {
-        margin-top: clamp(3.25rem, 8dvh, 4.35rem);
-        font-size: clamp(1.92rem, 9.3vw, 2.6rem);
+        margin-top: clamp(5rem, 11.5dvh, 5.75rem);
+        font-size: clamp(1.72rem, 8.15vw, 2.28rem);
     }
 
     .preview .preview-face[data-face="cover"] p:first-of-type {
@@ -2154,7 +2230,7 @@
 @media (max-width: 480px) {
     .book-splash__copy h1 {
         max-width: 8.4ch;
-        font-size: clamp(2.15rem, 12vw, 3.25rem);
+        font-size: clamp(2.25rem, 12.6vw, 3.45rem);
         line-height: .86;
     }
 
