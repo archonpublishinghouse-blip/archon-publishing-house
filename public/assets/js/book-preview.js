@@ -224,20 +224,25 @@
             target.replaceChildren();
             target.removeAttribute('data-face');
             if(pageNumber===16){
+                target.removeAttribute('data-book-page-rendered');
                 target.classList.add('is-blank');
                 return;
             }
             target.classList.remove('is-blank');
             const template=templateForPage(pageNumber);
             if(template){
+                target.dataset.bookPageRendered=template.dataset.bookPage||'';
                 target.append(template.content.cloneNode(true));
                 const folio=target.querySelector('.page-no');
                 if(folio)folio.textContent=String(pageNumber);
+            }else{
+                target.removeAttribute('data-book-page-rendered');
             }
         };
         const appendFace=(target,faceName)=>{
             target.replaceChildren();
             target.removeAttribute('data-face');
+            target.removeAttribute('data-book-page-rendered');
             const source=book.querySelector(`[data-face="${faceName}"]`);
             if(!source)return;
             const clone=source.cloneNode(true);
@@ -388,17 +393,19 @@
             const viewportWidth=document.documentElement.clientWidth||window.innerWidth;
             const viewportHeight=document.documentElement.clientHeight||window.innerHeight;
             const targetWidth=mode==='mobile'
-                ? clampNumber(usableRect.width*.42,165,Math.min(235,viewportWidth-32))
+                ? clampNumber(usableRect.width,165,viewportWidth-24)
                 : clampNumber(usableRect.width*.54,240,350);
             const isRightPage=page.classList?.contains('is-right')||usableRect.left>=stageRect.left+stageRect.width*.5;
             const sideInset=clampNumber(usableRect.width*.045,10,24);
-            const pageSideLeft=isRightPage
-                ? usableRect.left+targetWidth*.5+sideInset
-                : usableRect.right-targetWidth*.5-sideInset;
+            const pageSideLeft=mode==='mobile'
+                ? usableRect.left+usableRect.width*.5
+                : (isRightPage
+                    ? usableRect.left+targetWidth*.5+sideInset
+                    : usableRect.right-targetWidth*.5-sideInset);
             const left=clampNumber(pageSideLeft,targetWidth*.5+8,viewportWidth-targetWidth*.5-8);
             const top=clampNumber(usableRect.top,8,Math.max(8,viewportHeight-usableRect.height*.72));
             const maxHeight=mode==='mobile'
-                ? clampNumber(usableRect.height*.78,260,Math.max(260,viewportHeight-96))
+                ? clampNumber(usableRect.height,260,Math.max(260,viewportHeight-96))
                 : clampNumber(usableRect.height*.9,360,Math.max(360,viewportHeight-24));
             const dropDistance=Math.max(top+targetWidth,viewportHeight*.58);
             bookmarkDialog.style.setProperty('--bookmark-left',`${left}px`);
