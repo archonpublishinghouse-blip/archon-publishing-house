@@ -393,7 +393,7 @@
             const viewportWidth=document.documentElement.clientWidth||window.innerWidth;
             const viewportHeight=document.documentElement.clientHeight||window.innerHeight;
             const targetWidth=mode==='mobile'
-                ? clampNumber(usableRect.width,165,viewportWidth-24)
+                ? clampNumber(usableRect.width*.5,150,viewportWidth-24)
                 : clampNumber(usableRect.width*.54,240,350);
             const isRightPage=page.classList?.contains('is-right')||usableRect.left>=stageRect.left+stageRect.width*.5;
             const sideInset=clampNumber(usableRect.width*.045,10,24);
