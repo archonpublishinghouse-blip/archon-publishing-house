@@ -800,16 +800,16 @@
 
 /* The supplied transparent wordmark replaces only the temporary front-cover medallion. */
 .preview .preview-face[data-face="cover"]::after {
-    top: clamp(1.25rem, 3.5%, 1.75rem);
-    width: clamp(7.25rem, 30%, 9rem);
-    aspect-ratio: 297 / 415;
+    top: clamp(2.35rem, 6.2%, 3.15rem);
+    width: clamp(7.9rem, 28%, 9.6rem);
+    aspect-ratio: 1;
     border: 0;
     border-radius: 0;
     background-image: url('/assets/images/brand/archon-logo-transparent.png');
-    background-position: 48.3% 82.4%;
-    background-size: 168.35% 120.48%;
+    background-position: center;
+    background-size: contain;
     box-shadow: none;
-    filter: drop-shadow(0 0 .08rem rgba(246, 228, 172, .78)) drop-shadow(0 .4rem .55rem rgba(0, 0, 0, .38));
+    filter: brightness(1.18) contrast(1.08) drop-shadow(0 0 .12rem rgba(246, 228, 172, .82)) drop-shadow(0 .38rem .5rem rgba(0, 0, 0, .36));
 }
 
 .preview .preview-face[data-face="cover"] > *,
@@ -1936,11 +1936,11 @@
     }
 
     .preview .preview-face[data-face="cover"]::after {
-        top: clamp(1.05rem, 2.55dvh, 1.45rem);
-        width: clamp(4.05rem, 18vw, 5.25rem);
+        top: clamp(2.45rem, 6.2dvh, 3.35rem);
+        width: clamp(5.2rem, 24vw, 6.55rem);
         opacity: .9;
-        background-position: 48.3% 82.4%;
-        background-size: 168.35% 120.48%;
+        background-position: center;
+        background-size: contain;
     }
 
     .book-bookmark {
@@ -2398,8 +2398,8 @@
     }
 
     .preview .preview-face[data-face="cover"]::after {
-        width: clamp(3.55rem, 16vw, 4.5rem);
-        top: 1rem;
+        width: clamp(4.8rem, 21vw, 5.9rem);
+        top: 2.35rem;
     }
 
     .preview .chapter-marker {

@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260823-mobile11">
+<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260823-mobile12">
 
 <?php require __DIR__ . '/book-welcome.php'; ?>
 
