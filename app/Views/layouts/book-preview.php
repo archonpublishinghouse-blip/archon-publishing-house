@@ -32,7 +32,7 @@ $canonical = $baseUrl . $canonicalRoute;
  <link rel="stylesheet" href="/assets/css/main.css?v=20260823-mobile1">
 </head>
 <body class="preview-body">
- <a class="skip" href="#preview-book">Skip to book</a>
+ <a class="skip" href="#book-experience">Skip to book</a>
  <div id="preview-book"><?php require $contentView; ?></div>
  <script type="module" src="/assets/js/archon-3d-scene.js?v=20260821-3d1"></script>
 </body>
