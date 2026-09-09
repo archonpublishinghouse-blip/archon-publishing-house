@@ -36,6 +36,8 @@ final class Application {
         if ($route === '/admin' && $method === 'GET') $admin->dashboard();
         if ($route === '/admin/profile' && $method === 'GET') $admin->profile();
         if ($route === '/admin/profile' && $method === 'POST') $admin->updateProfile();
+        if ($route === '/admin/packages' && $method === 'GET') $admin->packages();
+        if ($route === '/admin/packages' && $method === 'POST') $admin->updatePackages();
         if ($route === '/admin/book-contact' && $method === 'GET') $admin->bookContact();
         if ($route === '/admin/book-contact' && $method === 'POST') $admin->updateBookContact();
         if ($route === '/admin/leads' && $method === 'GET') $admin->leads();

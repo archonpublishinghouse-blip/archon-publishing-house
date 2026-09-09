@@ -7,6 +7,11 @@
 <section class="section">
     <form method="post" action="/quote" enctype="multipart/form-data" class="panel quote-form">
         <input type="hidden" name="_token" value="<?=Security::csrf()?>">
+        <?php if (!empty($selectedPackage)): ?>
+            <input type="hidden" name="package_id" value="<?=Security::e($selectedPackage['id'])?>">
+            <p><strong>Selected package: <?=Security::e($selectedPackage['name'])?></strong><br><?=Security::e($selectedPackage['price'])?> &mdash; <?=Security::e($selectedPackage['tagline'])?></p>
+            <p><a class="text-link" href="/#writing-packages">Compare packages</a> &middot; <a class="text-link" href="/quote">Request a custom quote instead</a></p>
+        <?php endif; ?>
         <div class="form-grid">
             <label>Full name<input name="name" required></label>
             <label>Email address<input name="email" type="email" required></label>

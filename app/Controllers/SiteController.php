@@ -4,6 +4,7 @@ use App\Core\Security;
 use App\Services\MailService;
 use App\Services\DemoContent;
 use App\Services\BookChapterService;
+use App\Services\PackageService;
 
 final class SiteController extends Controller {
     public function home(): never {
@@ -51,7 +52,12 @@ final class SiteController extends Controller {
         MailService::send($email,'We received your message','Thank you for contacting Archon Publishing House. We will reply as soon as we can.');
         $this->formSuccess('/contact','Thank you. Your message has been received.');
     }
-    public function quote(): never { try{$services=$this->all('SELECT id,title FROM services WHERE is_active=1 ORDER BY display_order');}catch(\Throwable){$services=array_map(fn($service)=>['id'=>$service['id'],'title'=>$service['title']],DemoContent::services());}$this->render('site/quote',compact('services')); }
+    public function quote(): never {
+        try {$services=$this->all('SELECT id,title FROM services WHERE is_active=1 ORDER BY display_order');}
+        catch (\Throwable) {$services=array_map(fn($service)=>['id'=>$service['id'],'title'=>$service['title']],DemoContent::services());}
+        $selectedPackage = PackageService::selected($_GET['package'] ?? null);
+        $this->render('site/quote', compact('services', 'selectedPackage'));
+    }
     public function sendQuote(): never {
         $this->requirePost();
         if(!Security::rateLimit('quote',3,3600)){
@@ -62,6 +68,11 @@ final class SiteController extends Controller {
         $description=trim($_POST['description']??'');
         if(!$name||!$email||strlen($description)<20||empty($_POST['consent'])){
             $this->formFailure('/quote','Please complete the form, including consent.');
+        }
+        if (isset($_POST['package_id']) && $_POST['package_id'] !== '') {
+            $selectedPackage = PackageService::selected($_POST['package_id']);
+            if (!$selectedPackage) $this->formFailure('/quote', 'This package is no longer available. Please choose a current package or request a custom quote.');
+            $description = PackageService::leadDescription($description, $selectedPackage);
         }
         $pdo=$this->db();
         $pdo->prepare('INSERT INTO quote_requests (name,email,phone,service_id,book_title,genre,word_count,project_stage,completion_date,budget_range,description,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,\'new\')')->execute([$name,$email,trim($_POST['phone']??''),($_POST['service_id']?:null),trim($_POST['book_title']??''),trim($_POST['genre']??''),trim($_POST['word_count']??''),trim($_POST['project_stage']??''),($_POST['completion_date']?:null),trim($_POST['budget_range']??''),$description]);

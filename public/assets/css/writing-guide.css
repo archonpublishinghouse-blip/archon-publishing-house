@@ -1,0 +1,348 @@
+/* Scoped to the scrollable writing content; the physical book has its own styles. */
+.writing-guide {
+    --guide-ink: #0a2223;
+    --guide-heading: #0d3e42;
+    --guide-muted: #355958;
+    --guide-accent: #1d5356;
+    --guide-line: rgba(13, 62, 66, .24);
+    --guide-panel: rgba(235, 220, 185, .42);
+    position: relative;
+    z-index: 1;
+    width: min(1180px, 100%);
+    margin-inline: auto;
+    color: var(--guide-ink);
+    font: 400 1rem/1.7 Inter, Arial, sans-serif;
+    overflow-wrap: anywhere;
+}
+
+.writing-guide-container {
+    padding: 0 clamp(1rem, 5vw, 5rem) clamp(3rem, 6vw, 6rem);
+}
+
+.book-below .writing-guide {
+    --guide-ink: #f2ebd0;
+    --guide-heading: #f6e4ac;
+    --guide-muted: #c4c9b9;
+    --guide-accent: #ddc78f;
+    --guide-line: rgba(221, 199, 143, .25);
+    --guide-panel: rgba(29, 83, 86, .26);
+}
+
+.writing-guide__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: .5rem 2rem;
+    margin: 0;
+    padding: 1rem 0;
+    border-block: 1px solid var(--guide-line);
+}
+
+.writing-guide__nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--guide-ink);
+    font-size: .85rem;
+    text-decoration: underline;
+    text-decoration-color: var(--guide-line);
+    text-underline-offset: .4em;
+}
+
+.writing-guide__section {
+    padding-block: clamp(3rem, 6vw, 5rem);
+    scroll-margin-top: 7rem;
+}
+
+.writing-guide__section + .writing-guide__section {
+    border-top: 1px solid var(--guide-line);
+}
+
+.writing-guide .writing-guide__heading {
+    max-width: 48rem;
+    min-width: 0;
+    margin-bottom: 2rem;
+}
+
+.writing-guide .writing-guide__eyebrow {
+    margin: 0 0 1rem;
+    color: var(--guide-accent);
+    font: 700 .7rem/1.5 Inter, Arial, sans-serif;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+
+.writing-guide h2 {
+    margin: 0 0 1.25rem;
+    color: var(--guide-heading);
+    font: 600 clamp(2.15rem, 4.1vw, 4.15rem)/1.03 "Cormorant Garamond", Georgia, serif;
+    letter-spacing: -.025em;
+    text-wrap: balance;
+}
+
+.writing-guide h3 {
+    margin: 0 0 .8rem;
+    color: var(--guide-heading);
+    font: 600 clamp(1.5rem, 2.1vw, 1.95rem)/1.14 "Cormorant Garamond", Georgia, serif;
+    text-wrap: balance;
+}
+
+.writing-guide p {
+    margin: 0;
+    color: var(--guide-muted);
+    font: 400 1rem/1.7 Inter, Arial, sans-serif;
+}
+
+.writing-guide__stages {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+    padding: 0;
+    margin: 2.5rem 0 1.5rem;
+    list-style: none;
+}
+
+.writing-guide__stages li {
+    min-width: 0;
+    border-top: 2px solid var(--guide-line);
+    padding-top: 1.35rem;
+}
+
+.writing-guide__number {
+    display: block;
+    margin-bottom: 1.5rem;
+    color: var(--guide-accent);
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+}
+
+.writing-guide .writing-guide__bring {
+    margin-top: 1rem;
+    color: var(--guide-ink);
+    font-size: .9rem;
+}
+
+.writing-guide__expertise,
+.writing-guide__questions {
+    display: grid;
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+}
+
+.writing-guide__subjects {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+}
+
+.writing-guide__subjects article {
+    min-width: 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--guide-line);
+}
+
+.writing-guide__brief {
+    padding: clamp(1rem, 2.2vw, 1.75rem);
+    margin-top: 2rem;
+    border: 1px solid var(--guide-line);
+    background: var(--guide-panel);
+}
+
+.writing-guide__brief ul {
+    margin: 1rem 0;
+    padding-left: 1.2rem;
+    color: var(--guide-muted);
+}
+
+.writing-guide__brief li + li {
+    margin-top: .5rem;
+}
+
+.writing-guide__faq-list {
+    min-width: 0;
+    border-top: 1px solid var(--guide-line);
+}
+
+.writing-guide__faq-list details {
+    border-bottom: 1px solid var(--guide-line);
+}
+
+.writing-guide__faq-list summary {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr) 1rem;
+    align-items: baseline;
+    gap: .8rem;
+    padding: 1.35rem .25rem;
+    color: var(--guide-ink);
+    font: 600 1rem/1.5 Inter, Arial, sans-serif;
+    cursor: pointer;
+    list-style: none;
+}
+
+.writing-guide__faq-list summary::-webkit-details-marker {
+    display: none;
+}
+
+.writing-guide__faq-list summary::marker {
+    content: "";
+}
+
+.writing-guide__faq-number {
+    color: var(--guide-accent);
+    font-size: .7rem;
+}
+
+.writing-guide__faq-indicator::before {
+    content: "+";
+    color: var(--guide-accent);
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.writing-guide__faq-list details[open] .writing-guide__faq-indicator::before {
+    content: "−";
+}
+
+.writing-guide__faq-list details[open] {
+    background: var(--guide-panel);
+}
+
+.writing-guide__faq-list details p {
+    margin: 0;
+    padding: 0 1rem 1.5rem 2.55rem;
+}
+
+.writing-guide .writing-guide__more {
+    padding-top: 1.5rem;
+    font-size: .9rem;
+}
+
+.writing-guide-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    min-height: 44px;
+    margin-top: .8rem;
+    color: inherit;
+    font: 600 .85rem/1.5 Inter, Arial, sans-serif;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .35em;
+}
+
+.writing-guide a:hover,
+.writing-guide-link:hover {
+    color: var(--guide-accent, #ddc78f);
+}
+
+.writing-guide a:focus-visible,
+.writing-guide summary:focus-visible,
+.writing-guide-link:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+}
+
+.writing-guide-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.book-below-services.book-below-services--complete {
+    grid-template-columns: minmax(0, 1fr);
+    scroll-margin-top: 7rem;
+}
+
+.book-below-services--complete .book-below-services__heading {
+    max-width: 48rem;
+}
+
+.book-below-services--complete .book-below-services__heading h2 {
+    margin-bottom: 1.25rem;
+}
+
+.book-below-services--complete .book-below-services__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.book-below-services--complete .book-below-services__list article {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    gap: .85rem;
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.book-below-services--complete .book-below-services__list h3 {
+    font-size: clamp(1.65rem, 2.5vw, 2.1rem);
+    line-height: 1.15;
+}
+
+.book-below-services--complete .book-below-services__benefits {
+    margin: 0 0 .5rem;
+    padding-left: 1.15rem;
+    color: #c4c9b9;
+    font: 400 .95rem/1.7 Inter, Arial, sans-serif;
+}
+
+.book-below-services--complete .writing-guide-link {
+    margin-top: auto;
+    color: #ddc78f;
+}
+
+.book-below-services--complete .writing-guide-link span {
+    font: inherit;
+    letter-spacing: inherit;
+}
+
+@media (max-width: 900px) {
+    .writing-guide__expertise,
+    .writing-guide__questions {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .writing-guide__stages,
+    .writing-guide__subjects,
+    .book-below-services--complete .book-below-services__list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .writing-guide__nav {
+        gap: .25rem 1.25rem;
+    }
+
+    .writing-guide h2 {
+        font-size: clamp(2rem, 8.5vw, 2.8rem);
+    }
+
+    .writing-guide__section {
+        scroll-margin-top: 6rem;
+    }
+
+    .writing-guide__number {
+        margin-bottom: 1rem;
+    }
+
+    .writing-guide__faq-list summary {
+        grid-template-columns: 1.1rem minmax(0, 1fr) 1rem;
+        gap: .55rem;
+        padding-block: 1.1rem;
+    }
+
+    .writing-guide__faq-list details p {
+        padding-left: 1.9rem;
+    }
+}

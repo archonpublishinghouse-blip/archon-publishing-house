@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Core\Security;
 use App\Services\CrmSchemaService;
+use App\Services\PackageService;
 
 final class AdminController extends Controller {
     private array $resources = [
@@ -116,6 +117,28 @@ final class AdminController extends Controller {
         if ($fresh) $_SESSION['admin'] = ['id' => $fresh['id'], 'name' => $fresh['name'], 'email' => $fresh['email'], 'role' => $fresh['role'] ?: 'admin'];
         Security::flash('success', $profileSubmitted && !$passwordUpdated ? 'Account settings updated.' : 'Password updated.');
         Security::redirect('/admin/profile');
+    }
+
+    public function packages(): never {
+        $admin = $this->requireLeadManager();
+        $packageConfig = PackageService::get($this->db());
+        $errors = [];
+        $this->render('admin/packages', compact('admin', 'packageConfig', 'errors'));
+    }
+
+    public function updatePackages(): never {
+        $admin = $this->requireLeadManager();
+        $this->requirePost();
+        [$packageConfig, $errors] = PackageService::validate($_POST['config'] ?? null);
+        if ($errors) $this->render('admin/packages', compact('admin', 'packageConfig', 'errors'), 422);
+        try {
+            PackageService::save($packageConfig, $this->db());
+        } catch (\Throwable) {
+            $errors = ['Packages could not be saved. Your changes are still in the form; please try again.'];
+            $this->render('admin/packages', compact('admin', 'packageConfig', 'errors'), 503);
+        }
+        Security::flash('success', 'Packages updated. The website now uses your saved package details.');
+        Security::redirect('/admin/packages');
     }
 
     public function bookContact(): never {

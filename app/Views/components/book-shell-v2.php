@@ -1,4 +1,6 @@
 <link rel="stylesheet" href="/assets/css/book-preview.css?v=20260903-slider1">
+<link rel="stylesheet" href="/assets/css/writing-guide.css?v=20260909-content1">
+<link rel="stylesheet" href="/assets/css/writing-packages.css?v=20260909-packages1">
 
 <?php require __DIR__ . '/book-welcome.php'; ?>
 
@@ -26,6 +28,8 @@
             <a href="#published-books">Published Work</a>
             <a href="#writing-services">Services</a>
             <a href="#writing-process">Process</a>
+            <a href="#writing-packages">Packages</a>
+            <a href="#writing-faq">FAQs</a>
         </nav>
         <a class="preview-masthead__cta" href="#start-your-ebook">Request a Quote</a>
     </header>
@@ -137,9 +141,9 @@
     <section class="book-below" aria-label="Archon Publishing House service overview">
         <div class="book-below__intro">
             <div>
-                <p class="book-kicker">AFTER THE BOOK OPENS</p>
+                <p class="book-kicker">YOUR WRITING PARTNER</p>
                 <h2>Everything your idea needs to become a finished eBook.</h2>
-                <p>The interactive book gives visitors the experience. These sections give them the confidence: what Archon does, how the process works, and how to begin a serious writing enquiry.</p>
+                <p>You know what you want to share. We help you decide how to say it. From choosing a clear direction to refining the final manuscript, Archon brings structure, writing support and editorial care to your project.</p>
             </div>
             <div class="book-below-visual" aria-hidden="true">
                 <span class="book-below-visual__sheet book-below-visual__sheet--one"></span>
@@ -156,19 +160,19 @@
                 <span class="book-below-card__visual book-below-card__visual--idea" aria-hidden="true"></span>
                 <span class="book-below-card__number">01</span>
                 <h3>We shape raw ideas into readable books.</h3>
-                <p>Visitors may arrive with only a subject, a rough outline, a manuscript, or a business concept. Archon’s role is to help turn that starting point into a structured, professionally written eBook.</p>
+                <p>Start with a subject, a few notes, a rough outline or an unfinished draft. Together, we establish the reader, the purpose and a chapter plan that gives your material somewhere to go.</p>
             </article>
             <article class="book-below-card">
                 <span class="book-below-card__visual book-below-card__visual--writing" aria-hidden="true"></span>
                 <span class="book-below-card__number">02</span>
-                <h3>Writing-first positioning</h3>
-                <p>The public website now focuses on eBook-writing services, trust, process and quote requests instead of marketplace shopping.</p>
+                <h3>A voice that still feels like yours.</h3>
+                <p>Your perspective leads the writing. We use your source material and feedback to develop a consistent voice, so the finished manuscript reflects what you want to say.</p>
             </article>
             <article class="book-below-card">
                 <span class="book-below-card__visual book-below-card__visual--book" aria-hidden="true"></span>
                 <span class="book-below-card__number">03</span>
-                <h3>Book-like interaction</h3>
-                <p>The readable book remains the signature experience, while the scrollable page supports visitors who want a faster overview.</p>
+                <h3>Clear steps. Thoughtful feedback.</h3>
+                <p>An agreed schedule and chapter milestones make the work easier to follow. Review the direction, discuss the draft and understand the next step as your eBook takes shape.</p>
             </article>
         </div>
 
@@ -185,7 +189,7 @@
             <div class="book-below-portfolio__copy">
                 <p class="book-kicker">PUBLISHED BOOKS</p>
                 <h2 id="book-below-portfolio-title">A look at books brought to life with Archon.</h2>
-                <p>These published-book visuals help visitors immediately understand the quality, tone and premium presentation behind Archon Publishing House.</p>
+                <p>Explore our published titles and the ideas behind their covers. As you consider your own eBook, think about the message you want a reader to take away.</p>
             </div>
             <div class="published-slider" data-published-slider>
                 <div class="published-slider__viewport" data-published-viewport tabindex="0" aria-label="Published books slider" aria-roledescription="carousel">
@@ -215,42 +219,47 @@
             </div>
         </section>
 
-        <section class="book-below-services" id="writing-services" aria-labelledby="book-below-services-title">
-            <div>
+        <section class="book-below-services book-below-services--complete" id="writing-services" aria-labelledby="book-below-services-title">
+            <div class="book-below-services__heading">
                 <p class="book-kicker">WRITING SERVICES</p>
                 <h2 id="book-below-services-title">Choose the level of help your eBook needs.</h2>
+                <p>Some projects need a writer from the beginning. Others need a clearer structure or help preparing a completed manuscript. Explore the services below, then tell us where you are starting.</p>
+                <p>We begin with the material you already have: an idea, your professional knowledge, a chapter outline or a draft in progress. That starting point helps us recommend a useful scope, rather than treating every manuscript as the same project.</p>
+                <a class="writing-guide-link" href="/services">Explore all services <span aria-hidden="true">&rarr;</span></a>
+            </div>
+            <div class="writing-service-guidance" aria-label="Choosing your writing support">
+                <article><h3>Need someone to write with you?</h3><p>Writing and ghostwriting support helps connect your ideas into a manuscript. Your source material, author voice and chapter feedback guide the work.</p></article>
+                <article><h3>Already have words on the page?</h3><p>Editorial support considers the structure, clarity and flow of your draft. Describe what feels unfinished so we can discuss the right level of review.</p></article>
+                <article><h3>Preparing the finished manuscript?</h3><p>Formatting and publishing preparation help organize the final reading experience. Confirm the required files and finishing details in your project scope.</p></article>
             </div>
             <div class="book-below-services__list">
-                <?php foreach (array_slice(($services ?? []), 0, 3) as $index => $service): ?>
+                <?php foreach (($services ?? []) as $index => $service): ?>
                     <article>
-                        <i class="book-below-services__icon" aria-hidden="true"></i>
-                        <span><?=str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT)?></span>
+                        <span class="book-below-services__number" aria-hidden="true"><?=str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT)?></span>
                         <h3><?=Security::e($service['title'])?></h3>
-                        <p><?=Security::e($service['excerpt'] ?? $service['description'] ?? 'Professional support for your eBook project.')?></p>
+                        <p><?=Security::e($service['description'] ?? $service['summary'] ?? 'Professional support for your eBook project.')?></p>
+                        <?php $serviceBenefits = array_filter(array_map('trim', preg_split('/\r\n|\r|\n|\\\\n/', (string)($service['benefits'] ?? '')) ?: [])); ?>
+                        <?php if ($serviceBenefits): ?>
+                            <ul class="book-below-services__benefits">
+                                <?php foreach ($serviceBenefits as $benefit): ?>
+                                    <li><?=Security::e($benefit)?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                        <a class="writing-guide-link" href="/services/<?=Security::e(rawurlencode($service['slug']))?>">Explore this service <span aria-hidden="true">&rarr;</span><span class="writing-guide-sr-only">: <?=Security::e($service['title'])?></span></a>
                     </article>
                 <?php endforeach; ?>
                 <?php if (empty($services ?? [])): ?>
                     <article>
-                        <i class="book-below-services__icon" aria-hidden="true"></i>
-                        <span>01</span>
-                        <h3>eBook writing support</h3>
-                        <p>Professional help for clients who want to turn an idea, outline or draft into a completed eBook.</p>
-                    </article>
-                    <article>
-                        <i class="book-below-services__icon" aria-hidden="true"></i>
-                        <span>02</span>
-                        <h3>Manuscript development</h3>
-                        <p>Structured writing guidance for projects that need clearer flow, stronger chapters and a polished reader experience.</p>
-                    </article>
-                    <article>
-                        <i class="book-below-services__icon" aria-hidden="true"></i>
-                        <span>03</span>
-                        <h3>Publishing preparation</h3>
-                        <p>Support for shaping a client-ready manuscript before the next stage of publication.</p>
+                        <h3>Let us help you find a starting point.</h3>
+                        <p>Share your idea or manuscript stage and we can discuss the writing support your project needs.</p>
+                        <a class="writing-guide-link" href="/quote">Request a quote <span aria-hidden="true">&rarr;</span></a>
                     </article>
                 <?php endif; ?>
             </div>
         </section>
+
+        <?php require __DIR__ . '/writing-packages.php'; ?>
 
         <section class="book-below-studio" aria-labelledby="book-below-studio-title">
             <div class="book-below-studio__scene" aria-hidden="true">
@@ -261,9 +270,9 @@
                 <span class="book-below-studio__quill"></span>
             </div>
             <div class="book-below-studio__copy">
-                <p class="book-kicker">VISUAL WRITING ROOM</p>
+                <p class="book-kicker">SPACE FOR YOUR VOICE</p>
                 <h2 id="book-below-studio-title">A calm, guided writing experience.</h2>
-                <p>The design now supports the brand story visually: notes become structure, structure becomes pages, and pages become a finished eBook.</p>
+                <p>Your notes, conversations and experience give the book its substance. Our work is to connect them: find the central idea, build a readable sequence and refine each chapter with your input.</p>
             </div>
         </section>
 
@@ -274,25 +283,27 @@
                 <article>
                     <i class="book-below-process__mark" aria-hidden="true"></i>
                     <span>Discover</span>
-                    <p>Share your idea, target reader, purpose and any notes you already have.</p>
+                    <p>Share your idea, intended reader and source material. Discuss the scope, schedule and what you want the finished eBook to achieve.</p>
                 </article>
                 <article>
                     <i class="book-below-process__mark" aria-hidden="true"></i>
                     <span>Structure</span>
-                    <p>Clarify the book’s promise, chapter flow and writing direction.</p>
+                    <p>Shape the book’s promise, chapter outline and tone. A clear plan gives you a direction to review before the manuscript develops.</p>
                 </article>
                 <article>
                     <i class="book-below-process__mark" aria-hidden="true"></i>
                     <span>Write</span>
-                    <p>Develop the manuscript with a professional, consistent author voice.</p>
+                    <p>Develop the chapters around your knowledge and perspective. Use agreed milestones to review the writing and share your feedback.</p>
                 </article>
                 <article>
                     <i class="book-below-process__mark" aria-hidden="true"></i>
                     <span>Refine</span>
-                    <p>Review, polish and prepare the eBook for its next publishing step.</p>
+                    <p>Review the structure, flow and language, then prepare the agreed manuscript deliverables for your next publishing step.</p>
                 </article>
             </div>
         </section>
+
+        <?php require __DIR__ . '/writing-guide.php'; ?>
 
         <section class="book-below-quote" aria-label="Archon writing promise">
             <p>“The right book does more than explain an idea. It gives the idea a form people can trust, remember and share.”</p>
