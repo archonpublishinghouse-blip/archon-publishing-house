@@ -11,7 +11,7 @@
     const writeName=value=>{try{localStorage.setItem(storageKey,value);}catch{}};
     const removeName=()=>{try{localStorage.removeItem(storageKey);}catch{}};
 
-    document.addEventListener('DOMContentLoaded',()=>{
+    const initialize=()=>{
         const book=document.querySelector('[data-preview]');
         if(!book)return;
 
@@ -98,6 +98,7 @@
             if(immediate)splash.style.animation='none';
             splash.classList.add('is-dismissed');
             splash.setAttribute('aria-hidden','true');
+            document.dispatchEvent(new Event('archon:splash-end'));
         };
         if(splash&&(hasSeenSplash()||prefersReducedMotion())){
             dismissSplash(true);
@@ -106,7 +107,7 @@
             splash.addEventListener('animationend',event=>{
                 if(event.target===splash)dismissSplash();
             });
-            window.setTimeout(dismissSplash,3600);
+            window.setTimeout(dismissSplash,1800);
         }
         splashSkip?.addEventListener('click',()=>dismissSplash(true));
 
@@ -138,7 +139,7 @@
         coverImprint.textContent='Brought to Life by Archon Publishing House';
         cover.append(coverTitle,coverByline,coverImprint);
         insideFrontLogo.className='preview-inside-cover-logo';
-        insideFrontLogo.src='/assets/images/brand/archon-logo-transparent.png';
+        insideFrontLogo.src='/assets/images/brand/archon-logo-seal.png';
         insideFrontLogo.alt='Archon Publishing House';
         insideFrontLogo.width=500;
         insideFrontLogo.height=500;
@@ -327,6 +328,7 @@
             if(physicalState>=9)sheets[9].style.zIndex='30';
         };
         const setTransformsImmediately=physicalState=>{
+            if(sheets.every((sheet,index)=>sheet.classList.contains('is-flipped')===(index<physicalState)))return;
             sheets.forEach(sheet=>sheet.style.transition='none');
             setTransforms(physicalState);
             void stage.offsetWidth;
@@ -504,6 +506,10 @@
         };
         const draw=()=>{
             const modalBlocked=startRevealActive||isAnimating||dialogIsOpen()||bookmarkIsOpen();
+            if(book.classList.contains('is-reader-busy')!==modalBlocked){
+                book.classList.toggle('is-reader-busy',modalBlocked);
+                book.dispatchEvent(new Event('archon:reader-busy'));
+            }
             const introCanStart=Boolean(introActive&&currentState===0);
             const interactionBlocked=modalBlocked||(!ready&&!introCanStart)||(introActive&&!introCanStart);
             book.dataset.state=String(visualStateFor(currentState,activeViewId));
@@ -643,9 +649,14 @@
             overlay.addEventListener('animationend',ended);
             overlay.addEventListener('animationcancel',cancelled);
             activeAnimationCleanup=cancel;
-            timer=setTimeout(()=>complete('fail-safe'),500);
             requestAnimationFrame(()=>{
-                if(token===transitionToken&&!completed)overlay.classList.add(className);
+                if(token!==transitionToken||completed)return;
+                overlay.classList.add(className);
+                const style=getComputedStyle(overlay);
+                const milliseconds=value=>value.trim().endsWith('ms')?parseFloat(value)||0:(parseFloat(value)||0)*1000;
+                const delays=style.animationDelay.split(',').map(milliseconds);
+                const duration=Math.max(...style.animationDuration.split(',').map((value,index)=>milliseconds(value)+(delays[index%delays.length]||0)),0);
+                timer=setTimeout(()=>complete('fail-safe'),duration+150);
             });
         };
         const switchSettledSpread=(state,viewId)=>{
@@ -670,17 +681,18 @@
             layer.className='preview-turn-layer';
             layer.setAttribute('aria-hidden','true');
             layer.inert=true;
-            let underlay=copyReadablePage(revealedPage,outgoingSide,'preview-turn-underlay');
+            const underlay=copyReadablePage(revealedPage,outgoingSide,'preview-turn-underlay');
             const outgoing=copyReadablePage(outgoingPage,outgoingSide);
+            // Prepare both halves before starting: no cloning work at the edge-on midpoint.
+            const retained=copyReadablePage(retainedPage,incomingSide,'preview-turn-underlay');
+            const incoming=copyReadablePage(incomingPage,incomingSide);
             layer.append(underlay,outgoing);
             stage.append(layer);
             animateOverlay(outgoing,delta>0?'next-out':'previous-out',token,()=>{
                 outgoing.remove();
                 switchSettledSpread(target,targetViewId);
                 underlay.remove();
-                underlay=copyReadablePage(retainedPage,incomingSide,'preview-turn-underlay');
-                const incoming=copyReadablePage(incomingPage,incomingSide);
-                layer.append(underlay,incoming);
+                layer.append(retained,incoming);
                 animateOverlay(incoming,delta>0?'next-in':'previous-in',token,()=>finish(token));
             });
         };
@@ -1109,6 +1121,8 @@
             let dragBaseX=0;
             let dragCurrentX=0;
             let dragging=false;
+            let dragFrame=0;
+            let pendingDragX=0;
 
             const clampNumber=(value,min,max)=>Math.min(Math.max(value,min),max);
             const setTranslate=x=>{
@@ -1174,10 +1188,16 @@
             });
             viewport.addEventListener('pointermove',event=>{
                 if(!dragging)return;
-                setTranslate(dragBaseX+(event.clientX-dragStartX));
+                pendingDragX=dragBaseX+(event.clientX-dragStartX);
+                if(!dragFrame)dragFrame=requestAnimationFrame(()=>{
+                    dragFrame=0;
+                    if(dragging)setTranslate(pendingDragX);
+                });
             });
             const stopDrag=event=>{
                 if(!dragging)return;
+                if(dragFrame){cancelAnimationFrame(dragFrame);dragFrame=0;}
+                if(event.type==='pointerup')setTranslate(dragBaseX+(event.clientX-dragStartX));
                 dragging=false;
                 slider.classList.remove('is-dragging');
                 viewport.releasePointerCapture?.(event.pointerId);
@@ -1186,9 +1206,16 @@
             };
             viewport.addEventListener('pointerup',stopDrag);
             viewport.addEventListener('pointercancel',stopDrag);
-            window.addEventListener('resize',measure);
-            if('ResizeObserver' in window)new ResizeObserver(measure).observe(viewport);
-            requestAnimationFrame(measure);
+            let measureFrame=0;
+            const scheduleMeasure=()=>{
+                if(measureFrame)return;
+                measureFrame=requestAnimationFrame(()=>{measureFrame=0;measure();});
+            };
+            if('ResizeObserver' in window)new ResizeObserver(scheduleMeasure).observe(viewport);
+            else window.addEventListener('resize',scheduleMeasure,{passive:true});
+            scheduleMeasure();
         });
-    });
+    };
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize,{once:true});
+    else initialize();
 })();

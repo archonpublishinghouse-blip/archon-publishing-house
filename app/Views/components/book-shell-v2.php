@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260903-slider1">
+<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260913-hero4">
 <link rel="stylesheet" href="/assets/css/writing-guide.css?v=20260909-content1">
 <link rel="stylesheet" href="/assets/css/writing-packages.css?v=20260909-packages1">
 
@@ -17,7 +17,7 @@
 
     <header class="preview-masthead" aria-label="Primary website navigation">
         <a class="preview-masthead__brand" href="#top" aria-label="Archon Publishing House home">
-            <img src="/assets/images/brand/archon-logo-transparent.png" alt="">
+            <img src="/assets/images/brand/archon-logo-seal.png" alt="">
             <span>
                 <strong>Archon</strong>
                 <small>Publishing House</small>
@@ -72,7 +72,7 @@
                     <span class="book-intro__page book-intro__page--back"></span>
                     <span class="book-intro__page book-intro__page--middle"></span>
                     <div class="book-intro__cover">
-                        <img src="/assets/images/brand/archon-logo-transparent.png" alt="">
+                        <img src="/assets/images/brand/archon-logo-seal.png" alt="">
                         <span>Professional eBook Writing</span>
                         <strong>Your Story, Refined</strong>
                     </div>
@@ -197,7 +197,11 @@
                         <?php foreach ($publishedBooks as $index => $bookCover): ?>
                             <article class="published-book published-book--<?=($index % 5) + 1?>" data-published-slide>
                                 <figure class="published-book__cover">
-                                    <img src="<?=Security::e($bookCover['image'])?>" alt="<?=Security::e($bookCover['title'])?> book cover" loading="lazy" decoding="async">
+                                    <?php $coverBase = substr($bookCover['image'], 0, -4); ?>
+                                    <img src="<?=Security::e($coverBase)?>-480.webp"
+                                         srcset="<?=Security::e($coverBase)?>-480.webp 480w, <?=Security::e($coverBase)?>-960.webp 960w"
+                                         sizes="(max-width: 800px) 72vw, 300px" width="960" height="1440"
+                                         alt="<?=Security::e($bookCover['title'])?> book cover" loading="lazy" decoding="async">
                                 </figure>
                                 <div class="published-book__meta">
                                     <p>Published Book</p>
@@ -405,4 +409,4 @@
     </noscript>
 </main>
 
-<script src="/assets/js/book-preview.js?v=20260903-slider1" defer></script>
+<script src="/assets/js/book-preview.js?v=20260913-performance1" defer></script>

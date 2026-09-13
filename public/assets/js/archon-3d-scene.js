@@ -1,5 +1,3 @@
-import * as THREE from '../vendor/three.module.min.js';
-
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -9,32 +7,27 @@ const ready = (callback) => {
     else callback();
 };
 
-ready(() => {
-    if (document.body.classList.contains('admin-body')) return;
-
-    const preview = document.querySelector('[data-preview]');
-    const host = preview || document.body;
+const createScene = (THREE, host, preview, onRestore) => {
+    const compact = window.matchMedia('(pointer: coarse)').matches || (navigator.deviceMemory && navigator.deviceMemory <= 4);
     const layer = document.createElement('div');
     layer.className = 'archon-webgl-scene';
     layer.setAttribute('aria-hidden', 'true');
 
-    if (preview) preview.prepend(layer);
-    else document.body.prepend(layer);
+    host.prepend(layer);
 
     let renderer;
     try {
         renderer = new THREE.WebGLRenderer({
             alpha: true,
-            antialias: true,
-            powerPreference: 'high-performance',
+            antialias: !compact,
+            powerPreference: 'low-power',
         });
     } catch {
         layer.remove();
-        return;
+        return null;
     }
 
     renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
     layer.append(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -85,6 +78,8 @@ ready(() => {
         book.position.set(x, y, z);
         book.rotation.set(rx, ry, rz);
         book.scale.setScalar(s);
+        book.userData.baseY = y;
+        book.userData.baseRotationY = ry;
         stage.add(book);
         books.push(book);
         return book;
@@ -105,7 +100,7 @@ ready(() => {
     ];
     bookLayout.forEach(makeBook);
 
-    const particleCount = preview ? 120 : 80;
+    const particleCount = compact ? 32 : 64;
     const positions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i += 1) {
         positions[i * 3] = (Math.random() - 0.5) * (preview ? 13 : 16);
@@ -131,31 +126,33 @@ ready(() => {
     let width = 1;
     let height = 1;
     let frame = 0;
-    let running = !reduceMotion.matches;
-
-    const setHostPointer = () => {
-        const lightX = `${50 + pointer.x * 16}%`;
-        const lightY = `${38 + pointer.y * 12}%`;
-        host.style.setProperty('--scene-x', pointer.x.toFixed(4));
-        host.style.setProperty('--scene-y', pointer.y.toFixed(4));
-        host.style.setProperty('--scene-light-x', lightX);
-        host.style.setProperty('--scene-light-y', lightY);
-    };
+    let running = false;
+    let previousTime = 0;
+    let contextLost = false;
 
     const resize = () => {
-        width = Math.max(1, layer.clientWidth || window.innerWidth);
-        height = Math.max(1, layer.clientHeight || window.innerHeight);
+        width = Math.max(1, Math.min(layer.clientWidth || window.innerWidth, window.innerWidth));
+        height = Math.max(1, Math.min(layer.clientHeight || window.innerHeight, window.innerHeight));
+        // Bound the drawing buffer to 1.5M pixels, independent of document length.
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? 1 : 1.25, Math.sqrt(1500000 / (width * height))));
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
         camera.position.z = width < 760 ? (preview ? 10.4 : 12.5) : (preview ? 9.5 : 11);
         camera.updateProjectionMatrix();
-        renderer.render(scene, camera);
+        if (!contextLost) renderer.render(scene, camera);
     };
 
     const animate = (time = 0) => {
+        if (!running) return;
+        frame = requestAnimationFrame(animate);
+        // Decorative motion has its own 30fps budget; page turns remain CSS-driven.
+        const frameDuration = 1000 / 30;
+        const elapsed = time - previousTime;
+        if (elapsed + 0.01 < frameDuration) return;
+        // Keep the frame deadline on its grid instead of discarding the remainder.
+        previousTime += Math.floor((elapsed + 0.01) / frameDuration) * frameDuration;
         pointer.x += (target.x - pointer.x) * 0.055;
         pointer.y += (target.y - pointer.y) * 0.055;
-        setHostPointer();
 
         stage.rotation.y = pointer.x * 0.09;
         stage.rotation.x = -pointer.y * 0.045;
@@ -164,18 +161,17 @@ ready(() => {
         particles.rotation.z = time * 0.000025;
 
         books.forEach((book, index) => {
-            book.position.y += Math.sin(time * 0.0007 + index * 1.9) * 0.0009;
-            book.rotation.y += Math.sin(time * 0.0005 + index) * 0.00045;
+            book.position.y = book.userData.baseY + Math.sin(time * 0.0007 + index * 1.9) * 0.055;
+            book.rotation.y = book.userData.baseRotationY + Math.sin(time * 0.0005 + index) * 0.035;
         });
 
         renderer.render(scene, camera);
-        if (running) frame = requestAnimationFrame(animate);
     };
 
     const onPointer = (event) => {
-        const rect = layer.getBoundingClientRect();
-        target.x = clamp(((event.clientX - rect.left) / Math.max(1, rect.width) - 0.5) * 2, -1, 1);
-        target.y = clamp(((event.clientY - rect.top) / Math.max(1, rect.height) - 0.5) * 2, -1, 1);
+        if (!running || compact) return;
+        target.x = clamp((event.clientX / Math.max(1, window.innerWidth) - 0.5) * 2, -1, 1);
+        target.y = clamp((event.clientY / Math.max(1, window.innerHeight) - 0.5) * 2, -1, 1);
     };
 
     const stop = () => {
@@ -185,30 +181,88 @@ ready(() => {
     };
 
     const start = () => {
-        if (reduceMotion.matches || running) return;
+        if (reduceMotion.matches || contextLost || running) return;
         running = true;
+        previousTime = performance.now();
         frame = requestAnimationFrame(animate);
     };
 
-    window.addEventListener('resize', resize, { passive: true });
+    let resizeFrame = 0;
+    const scheduleResize = () => {
+        if (resizeFrame) return;
+        resizeFrame = requestAnimationFrame(() => { resizeFrame = 0; resize(); });
+    };
+    window.addEventListener('resize', scheduleResize, { passive: true });
     window.addEventListener('pointermove', onPointer, { passive: true });
-    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
-    reduceMotion.addEventListener?.('change', () => {
-        if (reduceMotion.matches) {
-            stop();
-            renderer.render(scene, camera);
-        } else {
-            start();
-        }
+    renderer.domElement.addEventListener('webglcontextlost', event => {
+        event.preventDefault();
+        contextLost = true;
+        stop();
     });
-
+    renderer.domElement.addEventListener('webglcontextrestored', () => {
+        contextLost = false;
+        resize();
+        onRestore();
+    });
     resize();
-    if (running) frame = requestAnimationFrame(animate);
-    else renderer.render(scene, camera);
+    return { start, stop };
+};
+
+ready(() => {
+    if (document.body.classList.contains('admin-body')) return;
+    const preview = document.querySelector('[data-preview]');
+    const bookSection = preview?.querySelector('[data-book-experience]');
+    const host = bookSection || document.body;
+    let visible = !bookSection;
+    let near = !bookSection;
+    let loading = false;
+    let scene = null;
+    let dependency = null;
+    const canRun = () => visible && !document.hidden && !reduceMotion.matches && !preview?.classList.contains('is-reader-busy') && !document.body.classList.contains('is-splash-lock');
+    const sync = () => {
+        if (scene) { if (canRun()) scene.start(); else scene.stop(); }
+        else if (near) scheduleLoad();
+    };
+    const load = async () => {
+        if (document.hidden || reduceMotion.matches || navigator.connection?.saveData || !near) { loading = false; return; }
+        try {
+            // A decorative dependency must not delay DOMContentLoaded or book controls.
+            dependency ||= await import('../vendor/three.module.min.js');
+            // Download nearby, but defer GPU setup if the reader became busy or left.
+            if (!near || !canRun() || navigator.connection?.saveData) { loading = false; return; }
+            scene = createScene(dependency, host, Boolean(preview), sync);
+            if (scene) sync();
+        } catch { /* The existing CSS book decorations remain available. */ }
+    };
+    const scheduleLoad = () => {
+        if (loading || scene || reduceMotion.matches || navigator.connection?.saveData) return;
+        loading = true;
+        if ('requestIdleCallback' in window) window.requestIdleCallback(load, { timeout: 1600 });
+        else setTimeout(load, 200);
+    };
+    if (bookSection && 'IntersectionObserver' in window) {
+        new IntersectionObserver(entries => { near = entries[0].isIntersecting; if (near) scheduleLoad(); }, { rootMargin: '240px' }).observe(bookSection);
+        new IntersectionObserver(entries => { visible = entries[0].isIntersecting; sync(); }).observe(bookSection);
+    } else {
+        visible = near = true;
+        scheduleLoad();
+    }
+    document.addEventListener('visibilitychange', sync);
+    reduceMotion.addEventListener?.('change', sync);
+    preview?.addEventListener('archon:reader-busy', sync);
+    document.addEventListener('archon:splash-end', sync);
 });
 
 ready(() => {
     if (document.body.classList.contains('admin-body')) return;
+
+    // Stop looping decoration once its section leaves the viewport.
+    if ('IntersectionObserver' in window) {
+        const motionObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => entry.target.classList.toggle('is-motion-paused', !entry.isIntersecting));
+        });
+        document.querySelectorAll('.book-intro, .book-experience-section, .book-below-visual, .book-below-studio').forEach(section => motionObserver.observe(section));
+    }
 
     const revealItems = document.querySelectorAll('.page-hero, .section, .panel, .service-list article, .author-card, .article-grid > a, .related-services > a');
     revealItems.forEach((item, index) => {

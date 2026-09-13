@@ -18,7 +18,7 @@ $description = $settings['seo.description'] ?? 'Archon Publishing House helps cl
     <meta property="og:title" content="<?=Security::e($siteTitle)?>">
     <meta property="og:description" content="<?=Security::e($description)?>">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="<?=Security::e($baseUrl)?>/assets/images/brand/archon-logo-parchment.webp">
+    <meta property="og:image" content="<?=Security::e($baseUrl)?>/assets/images/brand/archon-logo-seal.png">
     <title><?=Security::e($siteTitle)?></title>
     <link rel="icon" type="image/png" href="/assets/images/brand/archon-logo-transparent.png">
     <link rel="shortcut icon" type="image/png" href="/assets/images/brand/archon-logo-transparent.png">
@@ -27,7 +27,7 @@ $description = $settings['seo.description'] ?? 'Archon Publishing House helps cl
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/main.css?v=20260823-mobile1">
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Archon Publishing House","url":"<?=Security::e($baseUrl)?>","logo":"<?=Security::e($baseUrl)?>/assets/images/brand/archon-logo-parchment.webp"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Archon Publishing House","url":"<?=Security::e($baseUrl)?>","logo":"<?=Security::e($baseUrl)?>/assets/images/brand/archon-logo-seal.png"}</script>
 </head>
 <body>
     <a class="skip" href="#content">Skip to content</a>
@@ -37,7 +37,7 @@ $description = $settings['seo.description'] ?? 'Archon Publishing House helps cl
     </div>
     <header class="site-header">
         <a href="/" class="brand" aria-label="Archon Publishing House home">
-            <img class="brand-logo" src="/assets/images/brand/archon-logo-parchment.webp" alt="">
+            <img class="brand-logo" src="/assets/images/brand/archon-logo-seal.png" alt="">
             <span><b>ARCHON</b><small>PUBLISHING HOUSE</small></span>
         </a>
         <button class="menu-toggle" aria-expanded="false" aria-controls="mainnav">Menu</button>
@@ -70,7 +70,7 @@ $description = $settings['seo.description'] ?? 'Archon Publishing House helps cl
     </section>
     <footer>
         <div class="footer-brand">
-            <img class="footer-logo" src="/assets/images/brand/archon-logo-parchment.webp" alt="Archon Publishing House">
+            <img class="footer-logo" src="/assets/images/brand/archon-logo-seal.png" alt="Archon Publishing House">
             <p>From ideas to published stories.</p>
         </div>
         <div>
@@ -95,6 +95,6 @@ $description = $settings['seo.description'] ?? 'Archon Publishing House helps cl
         <p class="copyright">&copy; <?=date('Y')?> Archon Publishing House. Professional eBook writing services.</p>
     </footer>
     <script src="/assets/js/main.js" defer></script>
-    <script type="module" src="/assets/js/archon-3d-scene.js?v=20260821-3d1"></script>
+    <script type="module" src="/assets/js/archon-3d-scene.js?v=20260913-performance1"></script>
 </body>
 </html>
