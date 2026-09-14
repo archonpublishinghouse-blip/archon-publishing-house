@@ -1,5 +1,8 @@
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+const prefersCompactDevice = () => window.matchMedia('(pointer: coarse)').matches
+    || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 const ready = (callback) => {
@@ -8,7 +11,7 @@ const ready = (callback) => {
 };
 
 const createScene = (THREE, host, preview, onRestore) => {
-    const compact = window.matchMedia('(pointer: coarse)').matches || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+    const compact = prefersCompactDevice();
     const layer = document.createElement('div');
     layer.className = 'archon-webgl-scene';
     layer.setAttribute('aria-hidden', 'true');
@@ -224,7 +227,10 @@ ready(() => {
         else if (near) scheduleLoad();
     };
     const load = async () => {
-        if (document.hidden || reduceMotion.matches || navigator.connection?.saveData || !near) { loading = false; return; }
+        if (document.hidden || reduceMotion.matches || prefersCompactDevice() || navigator.connection?.saveData || !near) {
+            loading = false;
+            return;
+        }
         try {
             // A decorative dependency must not delay DOMContentLoaded or book controls.
             dependency ||= await import('../vendor/three.module.min.js');
@@ -235,7 +241,7 @@ ready(() => {
         } catch { /* The existing CSS book decorations remain available. */ }
     };
     const scheduleLoad = () => {
-        if (loading || scene || reduceMotion.matches || navigator.connection?.saveData) return;
+        if (loading || scene || reduceMotion.matches || prefersCompactDevice() || navigator.connection?.saveData) return;
         loading = true;
         if ('requestIdleCallback' in window) window.requestIdleCallback(load, { timeout: 1600 });
         else setTimeout(load, 200);
@@ -284,6 +290,7 @@ ready(() => {
     }
 
     const tiltItems = document.querySelectorAll('.author-card, .article-grid > a, .related-services > a, .service-list article, .book-card');
+    if (prefersCompactDevice()) return;
     tiltItems.forEach((item) => {
         item.dataset.archonTilt = '';
         item.addEventListener('pointermove', (event) => {

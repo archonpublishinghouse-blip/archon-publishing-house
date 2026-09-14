@@ -4737,6 +4737,32 @@
     }
 }
 
+/* Touch devices keep the reading experience responsive by using static decoration. */
+@media (max-width: 800px) and (pointer: coarse) {
+    .preview-masthead,
+    .preview-controls,
+    .book-splash__copy,
+    .book-welcome::backdrop,
+    .book-bookmark::backdrop {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .book-intro__book,
+    .book-below-visual__pen,
+    .book-below-studio__quill,
+    .book-below-studio__lamp,
+    .preview-ambient-book,
+    .book-experience-section__label {
+        animation: none !important;
+    }
+
+    .book-intro__book,
+    .book-intro__shadow {
+        filter: none;
+    }
+}
+
 /* Final cascade layer for the polished production review. */
 .preview {
     scroll-behavior: smooth;

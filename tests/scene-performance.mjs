@@ -152,6 +152,6 @@ for (const options of [{ reduced: true }, { saveData: true }]) {
 }
 const mobile = await setup({ compact: true });
 mobile.near.emit(true); mobile.visible.emit(true); await mobile.load();
-assert.equal(mobile.renderers[0].options.antialias, false, 'Mobile avoids multisample antialiasing');
-assert.ok(mobile.renderers[0].dpr <= 1, 'Mobile uses a bounded resolution');
+assert.equal(mobile.imports(), 0, 'Coarse-pointer mobile devices skip the WebGL download');
+assert.equal(mobile.renderers.length, 0, 'Mobile keeps decorative rendering in CSS');
 console.log('PASS: lazy loading, post-download eligibility, canvas budget, even frame pacing, GPU recovery, offscreen/hidden/busy pauses, reduced motion, save-data and single-loop lifecycle.');
