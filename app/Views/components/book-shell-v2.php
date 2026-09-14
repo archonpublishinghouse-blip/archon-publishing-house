@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260915-mobile-review1">
+<link rel="stylesheet" href="/assets/css/book-preview.css?v=20260915-mobile-clip1">
 <link rel="stylesheet" href="/assets/css/writing-guide.css?v=20260909-content1">
 <link rel="stylesheet" href="/assets/css/writing-packages.css?v=20260909-packages1">
 

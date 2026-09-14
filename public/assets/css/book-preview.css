@@ -5046,6 +5046,19 @@
         background: #08282b;
     }
 
+    /* Keep the composited book pages inside the reader section. Mobile Chrome can
+       otherwise retain a cream page layer after the reader has scrolled away. */
+    .book-experience-section {
+        isolation: isolate;
+        contain: layout paint;
+        overflow: clip;
+    }
+
+    .book-below {
+        isolation: isolate;
+        z-index: 4;
+    }
+
     .preview::before,
     .preview::after,
     .book-below::before {
