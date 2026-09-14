@@ -95,6 +95,6 @@ $description = $settings['seo.description'] ?? 'Archon Publishing House helps cl
         <p class="copyright">&copy; <?=date('Y')?> Archon Publishing House. Professional eBook writing services.</p>
     </footer>
     <script src="/assets/js/main.js" defer></script>
-    <script type="module" src="/assets/js/archon-3d-scene.js?v=20260914-mobile1"></script>
+    <script type="module" src="/assets/js/archon-3d-scene.js?v=20260915-mobile-review1"></script>
 </body>
 </html>

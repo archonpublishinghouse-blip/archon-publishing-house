@@ -276,7 +276,7 @@ ready(() => {
         item.style.setProperty('--reveal-delay', `${Math.min(index * 35, 260)}ms`);
     });
 
-    if ('IntersectionObserver' in window && !reduceMotion.matches) {
+    if ('IntersectionObserver' in window && !reduceMotion.matches && !prefersCompactDevice()) {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (!entry.isIntersecting) return;

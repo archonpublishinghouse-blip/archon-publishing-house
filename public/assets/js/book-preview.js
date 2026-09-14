@@ -253,6 +253,7 @@
             if(template){
                 target.dataset.bookPageRendered=template.dataset.bookPage||'';
                 target.append(template.content.cloneNode(true));
+                target.scrollTop=0;
                 const folio=target.querySelector('.page-no');
                 if(folio)folio.textContent=String(pageNumber);
             }else{
@@ -412,9 +413,11 @@
             const stageRect=stage.getBoundingClientRect();
             const usableRect=(rect.width>0&&rect.height>0)?rect:stageRect;
             const viewportWidth=document.documentElement.clientWidth||window.innerWidth;
-            const viewportHeight=document.documentElement.clientHeight||window.innerHeight;
+            const viewport=window.visualViewport;
+            const viewportHeight=viewport?.height||window.innerHeight;
+            const viewportTop=viewport?.offsetTop||0;
             const targetWidth=mode==='mobile'
-                ? clampNumber(usableRect.width*.5,150,viewportWidth-24)
+                ? Math.min(usableRect.width,viewportWidth-32)
                 : clampNumber(usableRect.width*.54,240,350);
             const isRightPage=page.classList?.contains('is-right')||usableRect.left>=stageRect.left+stageRect.width*.5;
             const sideInset=clampNumber(usableRect.width*.045,10,24);
@@ -424,10 +427,12 @@
                     ? usableRect.left+targetWidth*.5+sideInset
                     : usableRect.right-targetWidth*.5-sideInset);
             const left=clampNumber(pageSideLeft,targetWidth*.5+8,viewportWidth-targetWidth*.5-8);
-            const top=clampNumber(usableRect.top,8,Math.max(8,viewportHeight-usableRect.height*.72));
             const maxHeight=mode==='mobile'
-                ? clampNumber(usableRect.height,260,Math.max(260,viewportHeight-96))
+                ? Math.max(120,Math.min(usableRect.height,viewportHeight-48))
                 : clampNumber(usableRect.height*.9,360,Math.max(360,viewportHeight-24));
+            const top=mode==='mobile'
+                ? clampNumber(usableRect.top,viewportTop+24,Math.max(viewportTop+24,viewportTop+viewportHeight-maxHeight-24))
+                : clampNumber(usableRect.top,8,Math.max(8,viewportHeight-usableRect.height*.72));
             const dropDistance=Math.max(top+targetWidth,viewportHeight*.58);
             bookmarkDialog.style.setProperty('--bookmark-left',`${left}px`);
             bookmarkDialog.style.setProperty('--bookmark-top',`${top}px`);
@@ -435,6 +440,17 @@
             bookmarkDialog.style.setProperty('--bookmark-max-height',`${maxHeight}px`);
             bookmarkDialog.style.setProperty('--bookmark-drop-distance',`${dropDistance}px`);
         };
+        let bookmarkResizeFrame=0;
+        const scheduleBookmarkLayout=()=>{
+            if(!bookmarkIsOpen()||bookmarkResizeFrame)return;
+            bookmarkResizeFrame=requestAnimationFrame(()=>{
+                bookmarkResizeFrame=0;
+                if(bookmarkIsOpen())placeBookmarkOnPage(bookmarkOpener);
+            });
+        };
+        window.addEventListener('resize',scheduleBookmarkLayout,{passive:true});
+        window.visualViewport?.addEventListener('resize',scheduleBookmarkLayout,{passive:true});
+        window.visualViewport?.addEventListener('scroll',scheduleBookmarkLayout,{passive:true});
         const openBookmark=(formName,sourceElement=null)=>{
             if(!bookmarkDialog)return;
             bookmarkOpener=sourceElement||document.activeElement;
@@ -709,6 +725,8 @@
             edge.className='preview-mobile-turn-edge';
             layer.append(underlay,outgoing,edge);
             stage.append(layer);
+            // Continue from the passage the visitor was reading on a long page.
+            outgoing.scrollTop=settledRight.scrollTop;
             requestAnimationFrame(()=>{
                 if(token===transitionToken)edge.classList.add('is-active');
             });

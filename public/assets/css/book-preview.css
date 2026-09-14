@@ -4219,13 +4219,10 @@
 
     .preview [data-book-page-rendered="services-more"] .chapter-item p,
     .preview [data-book-page-rendered="genres"] .chapter-item p {
-        margin-bottom: 0;
-        display: -webkit-box;
-        overflow: hidden;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 3;
-        font-size: .7rem;
-        line-height: 1.18;
+        margin-bottom: .5rem;
+        display: block;
+        font-size: .9rem;
+        line-height: 1.45;
     }
 
     .preview [data-book-page-rendered="reviews"] blockquote,
@@ -4236,24 +4233,21 @@
 
     .preview [data-book-page-rendered="reviews"] blockquote > p,
     .preview [data-book-page-rendered="reviews-more"] blockquote > p {
-        display: -webkit-box;
-        overflow: hidden;
-        margin-bottom: .12rem;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 3;
-        font-size: clamp(.74rem, 3.2vw, .86rem);
-        line-height: 1.13;
+        display: block;
+        margin-bottom: .4rem;
+        font-size: .95rem;
+        line-height: 1.4;
     }
 
     .preview [data-book-page-rendered="reviews"] blockquote footer,
     .preview [data-book-page-rendered="reviews-more"] blockquote footer {
-        font-size: .52rem;
-        line-height: 1.08;
+        font-size: .7rem;
+        line-height: 1.4;
     }
 
     .preview [data-book-page-rendered="reviews"] blockquote footer small,
     .preview [data-book-page-rendered="reviews-more"] blockquote footer small {
-        font-size: .5rem;
+        font-size: .7rem;
     }
 }
 
@@ -4858,10 +4852,12 @@
     letter-spacing: .18em;
 }
 
-.book-intro__content {
-    grid-template-columns: minmax(0, .88fr) minmax(320px, .72fr);
-    gap: clamp(2.4rem, 5.5vw, 5.5rem);
-    width: min(1160px, 90vw);
+@media (min-width: 801px) {
+    .book-intro__content {
+        grid-template-columns: minmax(0, .88fr) minmax(320px, .72fr);
+        gap: clamp(2.4rem, 5.5vw, 5.5rem);
+        width: min(1160px, 90vw);
+    }
 }
 
 .book-intro__copy {
@@ -4978,8 +4974,9 @@
     }
 
     .book-intro__content {
+        grid-template-columns: minmax(0, 1fr);
         gap: 1.35rem;
-        width: min(90vw, 420px);
+        width: min(100%, 420px);
     }
 
     .book-intro .book-kicker {
@@ -5008,12 +5005,13 @@
     }
 
     .book-intro__proof {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr);
         text-align: left;
     }
 
     .book-intro__proof div {
         padding: .72rem .52rem;
+        border-left: 0;
     }
 
     .book-intro__proof dt {
@@ -5022,7 +5020,7 @@
     }
 
     .book-intro__proof dd {
-        font-size: .61rem;
+        font-size: .8rem;
         line-height: 1.35;
     }
 
@@ -5035,6 +5033,152 @@
     .book-intro__signature strong {
         font-size: .74rem;
     }
+}
+
+/* Phone layouts share the reader's 800px breakpoint, including touch laptops
+   and resized windows. Keep decoration in its own flow and reserve a control row. */
+@media (max-width: 800px) {
+    .preview {
+        --ph: clamp(380px, 58svh, 500px);
+        --pp: min(calc(100vw - 3rem), 390px, calc(var(--ph) * .84));
+        --page-copy: .9rem;
+        --page-heading: clamp(1.65rem, 6.5vw, 2.12rem);
+        background: #08282b;
+    }
+
+    .preview::before,
+    .preview::after,
+    .book-below::before {
+        display: none;
+    }
+
+    .preview-masthead {
+        position: absolute;
+        animation: none;
+        transform: translateX(-50%);
+        gap: .5rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+        background: #04181a;
+        box-shadow: inset 0 1px rgba(255,255,255,.1);
+    }
+
+    .preview-masthead__brand { min-width: 0; }
+    .preview-masthead__brand small { letter-spacing: .07em; }
+    .preview-masthead__cta { font-size: .6rem; letter-spacing: .06em; }
+
+    .book-intro {
+        padding: 6rem 1rem 3rem;
+    }
+
+    .book-intro__content::after { inset: -.5rem; }
+    .book-intro__copy { min-width: 0; }
+
+    .book-intro__showcase {
+        display: grid;
+        place-items: center;
+        min-width: 0;
+        min-height: 0;
+        padding: 2rem;
+        perspective: none;
+        animation: none;
+    }
+
+    .book-intro__book {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: min(50vw, 200px);
+        transform: rotate(-6deg);
+        animation: none !important;
+        filter: none;
+    }
+
+    .book-intro__cover { padding: 1.1rem; }
+    .book-intro__cover span { text-align: center; line-height: 1.4; letter-spacing: .1em; }
+    .book-intro__cover strong { font-size: clamp(1.55rem, 7vw, 2rem); line-height: .98; }
+    .book-intro__bookmark { animation: none; transform: rotate(6deg); }
+    .book-intro__shadow { display: none; }
+    .book-intro__signature { border-radius: 0; border-width: 0 0 0 2px; }
+    .book-intro__button, .book-intro__link { min-height: 48px; line-height: 1.4; }
+
+    .book-experience-section {
+        min-height: 0;
+        padding-block: 2.5rem 2rem;
+        gap: 1rem;
+    }
+
+    .preview-reader {
+        height: auto;
+        max-height: none;
+        grid-template-rows: var(--ph) 48px;
+        row-gap: 1.75rem;
+        align-self: center;
+    }
+
+    .preview .preview-side-navigation {
+        position: relative;
+        grid-area: 2 / 1;
+        inset: auto;
+        height: 48px;
+        transform: none;
+    }
+
+    .preview-controls { align-self: center; }
+    .preview-controls__tools button { min-height: 44px; font-size: .62rem; }
+
+    /* Long chapters remain readable without shrinking or cutting off sentences. */
+    .preview .preview-settled-page[data-book-page-rendered] {
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        touch-action: pan-y;
+    }
+
+    .preview :is(.preview-settled-page, .preview-turn-overlay, .preview-turn-underlay)[data-book-page-rendered] .page-no {
+        position: static;
+        margin-top: 1rem;
+    }
+
+    .preview .preview-mobile-turn-layer .preview-turn-overlay {
+        overflow: hidden;
+    }
+
+    .book-below > :is(div, section) { max-width: 100%; }
+    .book-below h2 { line-height: 1.08; }
+    .book-below-quote { isolation: isolate; padding: 2rem 1rem; }
+    .book-below .book-below-quote p { max-width: 24ch; font: 600 1.8rem/1.2 "Cormorant Garamond", Georgia, serif; }
+    .book-below .book-below-cta .book-kicker { color: #355958; }
+
+    .preview-controls,
+    .preview-controls__progress,
+    .preview-controls__tools,
+    .preview-masthead { backdrop-filter: none; -webkit-backdrop-filter: none; }
+
+    .published-slider__viewport { touch-action: pan-y pinch-zoom; }
+    .published-slider__viewport::before, .published-slider__viewport::after { width: 1rem; }
+    .published-slider .published-book { filter: none; }
+
+    .book-welcome input,
+    .book-bookmark__form input,
+    .book-bookmark__form select,
+    .book-bookmark__form textarea { font-size: 16px; min-height: 44px; }
+    .book-bookmark .consent input { min-height: 0; }
+    .book-bookmark h2 { font-size: 1.65rem; overflow-wrap: anywhere; }
+    .book-bookmark {
+        width: var(--bookmark-width) !important;
+        max-width: calc(100vw - 2rem);
+    }
+    .book-bookmark__panel {
+        padding-inline: 1rem;
+        overscroll-behavior-y: contain;
+        will-change: auto;
+    }
+    .book-bookmark__close button { width: 44px; height: 44px; }
+
+    .book-below-visual__pen,
+    .book-below-studio__quill,
+    .book-below-studio__lamp,
+    .preview-ambient-book { animation: none !important; }
 }
 
 /* Published books premium slider */
@@ -5178,10 +5322,12 @@
     .published-slider .book-below-portfolio__shelf {
         gap: .9rem;
         padding: 1rem max(1rem, 5vw) 1.25rem;
+        will-change: auto;
     }
 
     .published-slider .published-book {
         flex-basis: min(68vw, 15.5rem);
+        transform: none;
     }
 
     .published-slider__button {
